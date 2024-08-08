@@ -42,6 +42,8 @@ public class NeuralNetworkController : MonoBehaviour
     public ModelAsset model_0;
     public ModelAsset model_1;
     public ModelAsset model_2;
+    public ModelAsset model_3;
+    public ModelAsset model_4;
 
     private Model runtimeModel;
     private IWorker worker;
@@ -254,6 +256,16 @@ public class NeuralNetworkController : MonoBehaviour
                     runtimeModel = ModelLoader.Load(model_2);
                     lastModelId = modelIndex;
                     Debug.Log("Model 2");
+                    break;
+                case 3:
+                    runtimeModel = ModelLoader.Load(model_3);
+                    lastModelId = modelIndex;
+                    Debug.Log("Model 3");
+                    break;
+                case 4:
+                    runtimeModel = ModelLoader.Load(model_4);
+                    lastModelId = modelIndex;
+                    Debug.Log("Model 4");
                     break;
                 default:
                     runtimeModel = ModelLoader.Load(model_0);
