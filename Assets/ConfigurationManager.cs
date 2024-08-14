@@ -102,6 +102,7 @@ public class ConfigurationManager : MonoBehaviour
         else
         {
             Debug.LogError("Experiment finished");
+            EndOfExperiment.Invoke();
         }
     }
 

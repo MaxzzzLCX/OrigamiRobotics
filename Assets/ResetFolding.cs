@@ -7,6 +7,8 @@ public class ResetFolding : MonoBehaviour
 {
     public GameObject FoldingParentObject;
     private GameObject[] folds;
+    public GameObject nextArrow; // 3D object for the "Next" arrow
+    public GameObject previousArrow; // 3D object for the "Previous" arrow
     private int currentIndex = -1;
 
     // Start is called before the first frame update
@@ -45,7 +47,9 @@ public class ResetFolding : MonoBehaviour
 
         if (folds != null && folds.Length > 0)
         {
+            currentIndex = 0;
             RestartFolding();
+            UpdateArrows();
         }
     }
 
@@ -67,5 +71,13 @@ public class ResetFolding : MonoBehaviour
             }
 
         }
+    }
+    private void UpdateArrows()
+    {
+        // Disable the "Previous" arrow when the first FOLD is active
+        previousArrow.SetActive(currentIndex > 0);
+
+        // Disable the "Next" arrow when the last FOLD is active
+        nextArrow.SetActive(currentIndex < folds.Length - 1);
     }
 }

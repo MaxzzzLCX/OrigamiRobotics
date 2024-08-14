@@ -38,26 +38,30 @@ public class ModelSelectionManager : MonoBehaviour
 
     void OnEnable()
     {
-        // configManager = GetComponent<ConfigurationManager>();
+        /*
         if (configManager == null)
         {
             Debug.LogError("ConfigurationManager not found on the same GameObject.");
             return;
         }
+        */
         modelIndex = configManager.modelIndex;
-        Debug.Log("**2**");
         json_config = configManager.config;
+        /*
         if (json_config == null)
         {
             Debug.LogError("json_config is null. Ensure ConfigurationManager has successfully loaded the configuration.");
             return;
         }
+        */
         modelSequence = json_config.experiment_sequence;
+        /*
         if (string.IsNullOrEmpty(modelSequence))
         {
             Debug.LogError("modelSequence is null or empty.");
             return;
         }
+        */
 
         Debug.Log("ModelSelectionManager: " + modelSequence);
 

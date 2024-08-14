@@ -3,7 +3,7 @@
 This branch aims to attach a configuration file to the Unity project, 
 so the experiment can be conducted with customized order of origami model every time without needing to rebuild or redeploy the entire project. 
 
-Prepare the configuration document named "experiment_configuration.json". The format of configuration is as follows:
+Prepare the configuration document named "experiment_configuration.json". The format of configuration is as follows. There is a template in /StreamingAssets/experiment_configuration_
 ```
 {
   "experiment_sequence": "ABCDGHEF"
