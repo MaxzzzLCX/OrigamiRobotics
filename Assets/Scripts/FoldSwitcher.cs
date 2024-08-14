@@ -74,5 +74,10 @@ public class FoldSwitcher : MonoBehaviour
 
     // New function added by Max
     // This function will start the origami from the beginning everytime it is selected.
+    private void OnEnable()
+    {
+        Debug.Log("Enable Origami");
+
+    }
 
 }
