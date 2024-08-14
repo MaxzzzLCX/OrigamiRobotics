@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class MidPointSpawner : MonoBehaviour
 {
-    public GameObject objectToMove; // Obiekt do przeniesienia, ustawiany rêcznie w Unity
-    public GameObject objectToActivate; // Obiekt do aktywacji, ustawiany rêcznie w Unity
+    public GameObject objectToMove; // Object to move, set manually in Unity
+    public GameObject objectToActivate; // Object to activate, set manually in Unity
+    public GameObject instructionsToActivate; //ADD: the confirmation message to be triggered
 
     public PaperSheetLocalizer paperSheetLocalizer;
-    public float delay = 2.0f; // OpóŸnienie przed pierwszym sprawdzeniem
-    public float checkInterval = 5.0f; // Interwa³ czasu, co ile sekund ma sprawdzaæ dostêpnoœæ punktów
+    public float delay = 2.0f; // Delay before the first check
+    public float checkInterval = 5.0f; // Time interval, how often to check for points availability
 
-    private bool isMoved = false; // Flaga wskazuj¹ca, czy obiekt zosta³ ju¿ przeniesiony
-
+    private bool isMoved = false; // Flag indicating whether the object has already been moved
     void Start()
     {
         StartCoroutine(CheckAndMove());
@@ -25,26 +25,39 @@ public class MidPointSpawner : MonoBehaviour
         while (!isMoved)
         {
             List<Vector3> points = paperSheetLocalizer.DetectPapersheet();
+            // DetectPapersheet() will return a set of points if a papersheet is detected. 
+            // If not, it will return null
 
             if (points != null && points.Count > 0)
             {
-                // Wyznaczenie punktu œrodkowego
+                // Calculate the midpoint
                 Vector3 midPoint = CalculateMidPoint(points);
 
-                // Przesuniêcie obiektu do wyliczonego œrodka
+                // Move the object to the calculated midpoint
+                // Move the entire UI (objectToMove is the game object Set_Point, which includes all the UI components)
                 objectToMove.transform.position = midPoint;
 
-                // Aktywacja wybranego obiektu
+                // Activate the selected object
                 if (objectToActivate != null)
                 {
                     objectToActivate.SetActive(true);
+                    Debug.Log("**Paper Located");
+                    if (instructionsToActivate != null)
+                    {
+                        instructionsToActivate.SetActive(true);
+                        Debug.Log("**Confirmation Message Shown");
+                    }
+                    else
+                    {
+                        Debug.Log("**Confirmation Message not triggered");
+                    }
                 }
 
-                isMoved = true; // Ustaw flagê, ¿e obiekt zosta³ przeniesiony
+                isMoved = true; // Set the flag that the object has been moved
             }
             else
             {
-                // Czekaj okreœlony interwa³ czasu przed ponownym sprawdzeniem
+                // Wait for the specified time interval before checking again
                 yield return new WaitForSeconds(checkInterval);
             }
         }
@@ -57,6 +70,6 @@ public class MidPointSpawner : MonoBehaviour
         {
             sum += point;
         }
-        return sum / points.Count; // Œrednia z punktów
+        return sum / points.Count; // Average of the points
     }
 }

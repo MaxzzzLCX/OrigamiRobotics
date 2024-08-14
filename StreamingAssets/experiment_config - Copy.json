@@ -1,0 +1,14 @@
+{
+  "experiment_sequence": "ABCDEFGH"
+
+  /*
+  "models": {
+    "A": {
+      "eventToTrigger": "OnModelAActivated"
+    },
+    "B": {
+      "eventToTrigger": "OnModelBActivated"
+    }
+  }
+  */
+}

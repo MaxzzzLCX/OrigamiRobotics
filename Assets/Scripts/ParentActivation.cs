@@ -2,20 +2,20 @@ using UnityEngine;
 
 public class ParentActivation : MonoBehaviour
 {
-    // Funkcja do aktywacji Rodzic1 i odpowiedniej manipulacji dzieæmi
+    // Function to activate Parent1 and appropriately manipulate the children
     public void ActivateParentAndFirstChild()
     {
-        // Aktywacja samego siebie (Rodzic1)
+        // Activate itself (Parent1)
         gameObject.SetActive(true);
 
-        // Sprawdzanie czy s¹ jakieœ dzieci
+        // Check if there are any children
         if (transform.childCount > 0)
         {
-            // Aktywacja pierwszego dziecka i deaktywacja pozosta³ych
+            // Activate the first child and deactivate the others
             for (int i = 0; i < transform.childCount; i++)
             {
                 Transform child = transform.GetChild(i);
-                child.gameObject.SetActive(i == 0); // Aktywuje tylko pierwsze dziecko
+                child.gameObject.SetActive(i == 0); // Activates only the first child
             }
         }
     }

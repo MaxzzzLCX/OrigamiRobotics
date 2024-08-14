@@ -3,9 +3,9 @@ using TMPro;
 
 public class ConsoleDisplay : MonoBehaviour
 {
-    public static ConsoleDisplay Instance { get; private set; } // Statyczna instancja
+    public static ConsoleDisplay Instance { get; private set; } // static instance
 
-    public TMP_Text consoleOutput; // Obszar tekstowy do wyœwietlania logów
+    public TMP_Text consoleOutput; // test area for displaying logs
 
     private void Awake()
     {
@@ -37,7 +37,7 @@ public class ConsoleDisplay : MonoBehaviour
 
     public void ClearConsole()
     {
-        consoleOutput.text = ""; // Czyœci tekst w konsoli
+        consoleOutput.text = ""; // clears the text in the console
     }
 
 }

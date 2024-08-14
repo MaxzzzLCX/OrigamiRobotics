@@ -7,8 +7,8 @@ public class ValidateCheck : MonoBehaviour
     public ParentStateController parentStateController;
     public NeuralNetworkController neuralNetworkController;
 
-    public GameObject objectToControl; // GameObject, który ma byæ kontrolowany
-    public float delayInSeconds = 3f; // OpóŸnienie w sekundach
+    public GameObject objectToControl; // GameObject that is to be controlled
+    public float delayInSeconds = 3f; // Delay in seconds
 
     public UnityEvent onMatch;
     public UnityEvent onMismatch;
@@ -21,7 +21,7 @@ public class ValidateCheck : MonoBehaviour
             return;
         }
 
-        // Rozpocznij coroutine, która kontroluje proces
+        // Start the coroutine that controls the process
         StartCoroutine(ControlObjectRoutine());
     }
 
@@ -29,30 +29,30 @@ public class ValidateCheck : MonoBehaviour
     {
         if (objectToControl != null)
         {
-            // W³¹cz GameObject
+            // Enable the GameObject
             objectToControl.SetActive(true);
 
-            // Zatrzymaj wykonanie na okreœlony czas
+            // Pause execution for the specified time
             yield return new WaitForSeconds(delayInSeconds);
 
-            // Wy³¹cz GameObject
+            // Disable the GameObject
             objectToControl.SetActive(false);
         }
 
-        // Kontynuacja z pozosta³ymi czynnoœciami po zatrzymaniu GameObject
+        // Continue with other actions after stopping the GameObject
         int currentState = parentStateController.ParentState + 1;
         int predictedState = neuralNetworkController.Validate();
 
-        Debug.Log($"Aktualny stan rodzica: {currentState}, Predykowany stan: {predictedState}");
+        Debug.Log($"Current parent state: {currentState}, Predicted state: {predictedState}");
 
         if (currentState == predictedState)
         {
-            Debug.Log("Stany s¹ zgodne: wywo³anie onMatch");
+            Debug.Log("States match: invoking onMatch");
             onMatch.Invoke();
         }
         else
         {
-            Debug.Log("Stany siê ró¿ni¹: wywo³anie onMismatch");
+            Debug.Log("States differ: invoking onMismatch");
             onMismatch.Invoke();
         }
     }

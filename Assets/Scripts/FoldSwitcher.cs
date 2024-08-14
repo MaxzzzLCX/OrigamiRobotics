@@ -2,16 +2,16 @@ using UnityEngine;
 
 public class FoldSwitcher : MonoBehaviour
 {
-    public GameObject parentObject; // Przypisz tutaj obiekt nadrzêdny w edytorze
-    public GameObject nextArrow; // Obiekt 3D dla strza³ki "Dalej"
-    public GameObject previousArrow; // Obiekt 3D dla strza³ki "Cofnij"
+    public GameObject parentObject; // Assign the parent object here in the editor
+    public GameObject nextArrow; // 3D object for the "Next" arrow
+    public GameObject previousArrow; // 3D object for the "Previous" arrow
 
     private GameObject[] folds;
     private int currentIndex = -1;
 
     void Start()
     {
-        // Inicjalizacja i znalezienie dzieci zaczynaj¹cych siê od "FOLD_"
+        // Initialization and finding children that start with "FOLD_"
         int children = parentObject.transform.childCount;
         folds = new GameObject[children];
         bool activeFoldFound = false;
@@ -23,7 +23,7 @@ public class FoldSwitcher : MonoBehaviour
             {
                 folds[i] = child;
 
-                // SprawdŸ, czy ten FOLD jest aktywny
+                // Check if this FOLD is active
                 if (child.activeSelf && !activeFoldFound)
                 {
                     currentIndex = i;
@@ -32,7 +32,7 @@ public class FoldSwitcher : MonoBehaviour
             }
         }
 
-        // Jeœli nie znaleziono aktywnego FOLDa, aktywuj pierwszy
+        // If no active FOLD was found, activate the first one
         if (!activeFoldFound)
         {
             currentIndex = 0;
@@ -64,10 +64,15 @@ public class FoldSwitcher : MonoBehaviour
 
     private void UpdateArrows()
     {
-        // Wy³¹cz strza³kê "Cofnij" gdy pierwszy FOLD jest aktywny
+        // Disable the "Previous" arrow when the first FOLD is active
         previousArrow.SetActive(currentIndex > 0);
 
-        // Wy³¹cz strza³kê "Dalej" gdy ostatni FOLD jest aktywny
+        // Disable the "Next" arrow when the last FOLD is active
         nextArrow.SetActive(currentIndex < folds.Length - 1);
     }
+
+
+    // New function added by Max
+    // This function will start the origami from the beginning everytime it is selected.
+
 }
