@@ -23,7 +23,16 @@ What each alphabet represents is as shown below;
 Before the experiment, prepare the document. Then, go to the Device Web Portal of HoloLens (enter the IP address into browser). Upload experiment_configuration.json file 
 to the directary U:\Users\<User>\AppData\Local\Packages\<Project Name>\LocalCache. 
 
-# Note
+## Experiment Logging
+Experiment data is logged into two files: experiment_log.txt (for all validation results) and time_log.txt (for all durations).
+These files are stored into a folder (date and time of when the experiment is conducted) in the directory U:\Users\<User>\AppData\Local\Packages\<Project Name>\LocalState. 
+
+The format of the logging files, please refer to the experiment_log.txt and time_log.txt in this repository as an example. 
+
+
+## Progress
+2024.08.16 Added experiment logging functionality. The result of validation is logged in one file, and time related information logged into another file.
+2024.08.16 Fixed bugs from 08.15
 2024.08.15 Found a very weird bug. When the configuration file has a sequence of length eight, Model F will SKIP OVER the origami model. 
 As soon as the SKIP button of model F animation is clicked, the debug console says "Model F finished, moving on to next model"
 But model B was fine. 
