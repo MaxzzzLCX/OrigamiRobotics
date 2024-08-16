@@ -25,6 +25,8 @@ public class ConfigurationManager : MonoBehaviour
     // This is a flag used to keep track whether the user returned to menu after an origami model is finished
     // Without this flag, the user can click the "Previous Arrow" when reaching the last folding stage, and click "Next Arrow" again. This will trigger Next model twice, thus skipping over the next origami model. 
 
+    public TimeLoggerManager timeLoggerManager;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -47,6 +49,7 @@ public class ConfigurationManager : MonoBehaviour
         {
             Debug.Log("JSON file does not exist at path: " + _settingsPath);
         }
+
        
     }
 
@@ -95,13 +98,13 @@ public class ConfigurationManager : MonoBehaviour
         }
     }
 
-    public void NextModel(GameObject sender) //DEBUG
+    public void NextModel(GameObject sender) //This method calls the EndOfModel, which writes into time log file
     {
         if (ReturnedToMenu)
         {
             ReturnedToMenu = false; // when ReturnedToMenu is false, the modelIndex will not increment to move onto next origami model to prevent double triggering
                                     // the only way to set ReturnedToMenu to true is to return to the Menu
-            Debug.Log("[NEWNEW] Set ReturnedToMenu to false");
+            // Debug.Log("[NEWNEW] Set ReturnedToMenu to false");
 
             if (sender != null)
             {
@@ -114,6 +117,17 @@ public class ConfigurationManager : MonoBehaviour
 
             if (config != null && modelIndex + 1 < config.experiment_sequence.Length)
             {
+                if (timeLoggerManager != null)
+                {
+                    Debug.Log("[LOG] timeLoggerManager is not null");
+                    timeLoggerManager.endOfModel(modelIndex, config.experiment_sequence[modelIndex]);
+                }
+                else
+                {
+                    Debug.Log("[LOG] timeLoggerManager is null");
+                }
+                
+
                 modelIndex += 1;
                 Debug.LogError("Model " + config.experiment_sequence[modelIndex - 1] + "finished. Next model: " + config.experiment_sequence[modelIndex]);
             }
@@ -123,6 +137,11 @@ public class ConfigurationManager : MonoBehaviour
                 EndOfExperiment.Invoke();
             }
         }
+    }
+
+    public void StartOfModel()
+    {
+        timeLoggerManager.startOfModel();
     }
 
     // This function is used to set the flag 'ReturnedToMenu' as explained above in variable declaration. 
