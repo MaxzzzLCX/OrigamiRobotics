@@ -41,11 +41,11 @@ public class TimeLoggerManager: MonoBehaviour
         timeStartOfStep = DateTime.Now;
     }
    
-    public void endOfStep()
+    public void endOfStep(int stepIndex)
     {
         timeEndOfStep = DateTime.Now;
         durationStep = timeEndOfStep - timeStartOfStep;
-        string message = $"Step duratation: {durationStep}";
+        string message = $"Step {stepIndex} duratation: {durationStep}";
         experimenHandler.LogMessage(message, true); //true meaning writing log into time_log.txt
     }
 

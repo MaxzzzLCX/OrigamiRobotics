@@ -144,6 +144,7 @@ public class ConfigurationManager : MonoBehaviour
         timeLoggerManager.startOfModel();
     }
 
+
     // This function is used to set the flag 'ReturnedToMenu' as explained above in variable declaration. 
     public void SetReturnToMenuFlag(bool newFlag)
     {

@@ -9,6 +9,8 @@ public class FoldSwitcher : MonoBehaviour
     private GameObject[] folds;
     private int currentIndex = -1;
 
+    public TimeLoggerManager timeLoggerManager;
+
     void Start()
     {
         // Initialization and finding children that start with "FOLD_"
@@ -42,12 +44,14 @@ public class FoldSwitcher : MonoBehaviour
         UpdateArrows();
     }
 
-    public void NextFold()
+    public void NextFold() //Everytime the next button is pressed, it triggers the time logging
     {
         folds[currentIndex].SetActive(false);
+        timeLoggerManager.endOfStep(currentIndex);
 
         currentIndex = (currentIndex + 1) % folds.Length;
         folds[currentIndex].SetActive(true);
+        timeLoggerManager.startOfStep();
 
         UpdateArrows();
     }
@@ -118,4 +122,12 @@ public class FoldSwitcher : MonoBehaviour
         }
     }
 
+    public void StartOfStep()
+    {
+        timeLoggerManager.startOfStep();
+    }
+    public void EndOfStep()
+    {
+        timeLoggerManager.endOfStep(currentIndex);
+    }
 }
