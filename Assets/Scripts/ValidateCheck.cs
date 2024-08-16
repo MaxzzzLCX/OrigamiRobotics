@@ -45,6 +45,8 @@ public class ValidateCheck : MonoBehaviour
 
         Debug.Log($"Current parent state: {currentState}, Predicted state: {predictedState}");
 
+        neuralNetworkController.LogMessage($"{neuralNetworkController.lastModelId}, {currentState}, {predictedState}");
+
         if (currentState == predictedState)
         {
             Debug.Log("States match: invoking onMatch");

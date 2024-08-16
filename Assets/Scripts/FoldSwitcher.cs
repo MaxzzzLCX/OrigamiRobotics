@@ -76,8 +76,46 @@ public class FoldSwitcher : MonoBehaviour
     // This function will start the origami from the beginning everytime it is selected.
     private void OnEnable()
     {
-        Debug.Log("Enable Origami");
+        // Debug.Log("Enable Origami");
 
+    }
+
+    public void Restart()
+    {
+        Debug.Log("[NEW] Origami Model Enabled - Reset to Start");
+
+        if (folds != null && folds.Length > 0)
+        {
+            currentIndex = 0;
+            Debug.Log("Current Index RESET to 0");
+            RestartFoldingStageDisplay();
+            UpdateArrows();
+        }
+    }
+    public void ResetIndex()
+    {
+        Debug.Log("[New] Reset Index");
+        currentIndex = 0;
+    }
+
+    public void RestartFoldingStageDisplay()
+    {
+        Debug.Log("Restart Now");
+        if (folds != null && folds.Length > 0)
+        {
+            for (int i = 0; i < folds.Length; ++i)
+            {
+                if (currentIndex == i)
+                {
+                    folds[i].gameObject.SetActive(true);
+                }
+                else
+                {
+                    folds[i].gameObject.SetActive(false);
+                }
+            }
+
+        }
     }
 
 }

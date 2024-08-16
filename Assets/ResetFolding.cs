@@ -9,6 +9,7 @@ public class ResetFolding : MonoBehaviour
     private GameObject[] folds;
     public GameObject nextArrow; // 3D object for the "Next" arrow
     public GameObject previousArrow; // 3D object for the "Previous" arrow
+    
     private int currentIndex = -1;
 
     // Start is called before the first frame update
@@ -43,6 +44,7 @@ public class ResetFolding : MonoBehaviour
     // Update is called once per frame
     private void OnEnable()
     {
+        currentIndex = 0;
         Debug.Log("Origami Model Enabled - Reset to Start");
 
         if (folds != null && folds.Length > 0)

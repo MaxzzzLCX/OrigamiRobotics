@@ -36,7 +36,7 @@ public class ModelSelectionManager : MonoBehaviour
 
     // Update is called once per frame
 
-    void OnEnable()
+    private void OnEnable()
     {
         /*
         if (configManager == null)
@@ -84,7 +84,7 @@ public class ModelSelectionManager : MonoBehaviour
                 }
                 break;
             case 'C':
-                Debug.Log("Case of C. Invoke A Event");
+                Debug.Log("Case of C. Invoke C Event");
                 if (ModelCEvent != null)
                 {
                     ModelCEvent.Invoke();

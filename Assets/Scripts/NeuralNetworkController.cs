@@ -55,7 +55,9 @@ public class NeuralNetworkController : MonoBehaviour
     private Texture2D croppedTexture;
 
     List<DetectionResult> boxes;
-    int lastModelId;
+    public int lastModelId;
+
+    private ExperimentHandler experimentHandler;
 
     void Start()
     {
@@ -73,12 +75,20 @@ public class NeuralNetworkController : MonoBehaviour
 
         boxes = new List<DetectionResult>();
 
+        experimentHandler = new ExperimentHandler();
     }
 
     // Update is called once per frame
     void Update()
     {
     }
+
+    public void LogMessage(string data)
+    {
+        experimentHandler.LogMessage(data);
+        Debug.Log($"Logged: {data}");
+    }
+
 
     private Color[] CropTexture(Texture2D sourceTexture, int cropWidth, int cropHeight)
     {
@@ -277,4 +287,10 @@ public class NeuralNetworkController : MonoBehaviour
             worker = WorkerFactory.CreateWorker(BackendType.CPU, runtimeModel);
         }
     }
+
+    public void LogPrediction()
+    {
+
+    }
+
 }

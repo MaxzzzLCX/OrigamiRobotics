@@ -22,3 +22,8 @@ What each alphabet represents is as shown below;
 
 Before the experiment, prepare the document. Then, go to the Device Web Portal of HoloLens (enter the IP address into browser). Upload experiment_configuration.json file 
 to the directary U:\Users\<User>\AppData\Local\Packages\<Project Name>\LocalCache. 
+
+# Note
+2024.08.15 Found a very weird bug. When the configuration file has a sequence of length eight, Model F will SKIP OVER the origami model. 
+As soon as the SKIP button of model F animation is clicked, the debug console says "Model F finished, moving on to next model"
+But model B was fine. 

@@ -21,6 +21,10 @@ public class ConfigurationManager : MonoBehaviour
 
     public UnityEvent EndOfExperiment;
 
+    public bool ReturnedToMenu = true;
+    // This is a flag used to keep track whether the user returned to menu after an origami model is finished
+    // Without this flag, the user can click the "Previous Arrow" when reaching the last folding stage, and click "Next Arrow" again. This will trigger Next model twice, thus skipping over the next origami model. 
+
     // Start is called before the first frame update
     void Start()
     {
@@ -91,19 +95,41 @@ public class ConfigurationManager : MonoBehaviour
         }
     }
 
-    public void NextModel()
+    public void NextModel(GameObject sender) //DEBUG
     {
+        if (ReturnedToMenu)
+        {
+            ReturnedToMenu = false; // when ReturnedToMenu is false, the modelIndex will not increment to move onto next origami model to prevent double triggering
+                                    // the only way to set ReturnedToMenu to true is to return to the Menu
+            Debug.Log("[NEWNEW] Set ReturnedToMenu to false");
 
-        if (config != null && modelIndex+1 < config.experiment_sequence.Length)
-        {
-            modelIndex += 1;
-            Debug.LogError("Model " + config.experiment_sequence[modelIndex-1] +  "finished. Next model: " + config.experiment_sequence[modelIndex]);
+            if (sender != null)
+            {
+                Debug.Log("[New] NextModel function called by " + sender.name);
+            }
+            else
+            {
+                Debug.Log("[New] NextModel called, BUT NO SENDER");
+            }
+
+            if (config != null && modelIndex + 1 < config.experiment_sequence.Length)
+            {
+                modelIndex += 1;
+                Debug.LogError("Model " + config.experiment_sequence[modelIndex - 1] + "finished. Next model: " + config.experiment_sequence[modelIndex]);
+            }
+            else
+            {
+                Debug.LogError("Experiment finished");
+                EndOfExperiment.Invoke();
+            }
         }
-        else
-        {
-            Debug.LogError("Experiment finished");
-            EndOfExperiment.Invoke();
-        }
+    }
+
+    // This function is used to set the flag 'ReturnedToMenu' as explained above in variable declaration. 
+    public void SetReturnToMenuFlag(bool newFlag)
+    {
+        ReturnedToMenu = newFlag;
+        Debug.Log("[NEWNEW] Set ReturnedToMenu to true");
     }
 
    

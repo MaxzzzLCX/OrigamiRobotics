@@ -45,6 +45,8 @@ public class ValidateCheckCustomScript : MonoBehaviour
 
         Debug.Log($"Aktualny niestandardowy stan rodzica: {currentState}, Predykowany stan: {predictedState}");
 
+        neuralNetworkController.LogMessage($"{neuralNetworkController.lastModelId}, {currentState}, {predictedState}");
+
         if (currentState == predictedState)
         {
             Debug.Log("Stany s¹ zgodne: wywo³anie onMatch");
