@@ -18,8 +18,10 @@ public class ConfigurationManager : MonoBehaviour
     public Configuration config;
 
     public int modelIndex = 0;
+    public int tutorialIndex = 0;
 
     public UnityEvent EndOfExperiment;
+    public UnityEvent EndOfTutorial;
 
     public bool ReturnedToMenu = true;
     // This is a flag used to keep track whether the user returned to menu after an origami model is finished
@@ -80,6 +82,7 @@ public class ConfigurationManager : MonoBehaviour
     public class Configuration
     {
         public string id;
+        public string tutorial_mode;
         public string tutorial_sequence;
         public string experiment_sequence;
     }
@@ -93,6 +96,7 @@ public class ConfigurationManager : MonoBehaviour
 
             Debug.Log("Json file is read");
             Debug.Log($"Participant ID: {config.id}");
+            Debug.Log($"Tutorial status: {config.tutorial_mode}");
             Debug.Log($"Tutorial Sequence: {config.tutorial_sequence}");
             Debug.Log($"Sequence: {config.experiment_sequence}");
         }
@@ -119,27 +123,60 @@ public class ConfigurationManager : MonoBehaviour
                 Debug.Log("[New] NextModel called, BUT NO SENDER");
             }
 
-            if (config != null && modelIndex + 1 < config.experiment_sequence.Length)
+
+            if (config.tutorial_mode == "0")
             {
-                if (timeLoggerManager != null)
+                if (config != null && modelIndex + 1 < config.experiment_sequence.Length)
                 {
-                    Debug.Log("[LOG] timeLoggerManager is not null");
-                    timeLoggerManager.endOfModel(modelIndex, config.experiment_sequence[modelIndex]);
+                    if (timeLoggerManager != null)
+                    {
+                        Debug.Log("[LOG] timeLoggerManager is not null");
+                        timeLoggerManager.endOfModel(modelIndex, config.experiment_sequence[modelIndex]);
+                    }
+                    else
+                    {
+                        Debug.Log("[LOG] timeLoggerManager is null");
+                    }
+
+
+                    modelIndex += 1;
+                    Debug.LogError("Model " + config.experiment_sequence[modelIndex - 1] + "finished. Next model: " + config.experiment_sequence[modelIndex]);
                 }
                 else
                 {
-                    Debug.Log("[LOG] timeLoggerManager is null");
+                    Debug.LogError("Experiment finished");
+                    EndOfExperiment.Invoke();
                 }
-                
-
-                modelIndex += 1;
-                Debug.LogError("Model " + config.experiment_sequence[modelIndex - 1] + "finished. Next model: " + config.experiment_sequence[modelIndex]);
             }
             else
             {
-                Debug.LogError("Experiment finished");
-                EndOfExperiment.Invoke();
+
+                if (config != null && tutorialIndex + 1 < config.tutorial_sequence.Length)
+                {
+                    /*
+                    if (timeLoggerManager != null)
+                    {
+                        Debug.Log("[LOG] timeLoggerManager is not null");
+                        // timeLoggerManager.endOfModel(tutorialIndex, config.tutorial_sequence[tutorialIndex]);
+                    }
+                    else
+                    {
+                        Debug.Log("[LOG] timeLoggerManager is null");
+                    }
+                    */
+
+                    tutorialIndex += 1;
+                    Debug.LogError("Model " + config.tutorial_sequence[tutorialIndex - 1] + "finished. Next model: " + config.tutorial_sequence[tutorialIndex]);
+                }
+                else
+                {
+                    Debug.LogError("Tutorial finished");
+                    EndOfTutorial.Invoke();
+                }
             }
+
+            
+           
         }
     }
 

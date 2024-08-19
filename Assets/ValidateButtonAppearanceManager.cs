@@ -7,34 +7,67 @@ public class ValidateButtonAppearanceManager : MonoBehaviour
 {
     public ConfigurationManager configManager;
     private int modelIndex;
+    private int tutorialIndex;
     private ConfigurationManager.Configuration json_config;
     private string modelSequence;
+    private string tutorialSequence;
+    private string tutorialMode;
 
     private void OnEnable()
     {
         modelIndex = configManager.modelIndex;
-        json_config = configManager.config;
-        modelSequence = json_config.experiment_sequence;
-        Debug.Log("ModelSelectionManager: " + modelSequence);
-
-        char current = modelSequence[modelIndex];
-
-        if (current != null)
+        tutorialIndex = configManager.tutorialIndex;
+        tutorialMode = configManager.config.tutorial_mode;
+        // json_config = configManager.config;
+        modelSequence = configManager.config.experiment_sequence;
+        tutorialSequence = configManager.config.tutorial_sequence;
+       
+        if (tutorialMode == "0")
         {
-            if (current ==  'E' || current == 'F' || current == 'G' || current == 'H')
+            Debug.Log("NOW IS EXPERIMENT");
+            char current = modelSequence[modelIndex];
+
+            if (current != null)
             {
-                Debug.Log("Current letter is " + current + " , thus hide validation button");
-                gameObject.SetActive(false);
+                if (current == 'E' || current == 'F' || current == 'G' || current == 'H')
+                {
+                    Debug.Log("Current letter is " + current + " , thus hide validation button");
+                    gameObject.SetActive(false);
+                }
+                else
+                {
+                    Debug.Log("Current letter is " + current + " , thus show validation button");
+                }
+
             }
             else
             {
-                Debug.Log("Current letter is " + current + " , thus show validation button");
+                Debug.Log("No Valid Character");
             }
-
         }
         else
         {
-            Debug.Log("No Valid Character");
+            Debug.Log("NOW IS TUTORIAL");
+            char current = tutorialSequence[tutorialIndex];
+
+            if (current != null)
+            {
+                if (current == '0')
+                {
+                    Debug.Log("Current number is " + current + " , thus hide validation button");
+                    gameObject.SetActive(false);
+                }
+                else
+                {
+                    Debug.Log("Current letter is " + current + " , thus show validation button");
+                }
+
+            }
+            else
+            {
+                Debug.Log("No Valid Character");
+            }
         }
+        
     }
 }
