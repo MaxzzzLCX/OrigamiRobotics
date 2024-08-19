@@ -76,9 +76,11 @@ public class ConfigurationManager : MonoBehaviour
     }
     */
 
-
+    // class Configuration matches the format of the json file. 
     public class Configuration
     {
+        public string id;
+        public string tutorial_sequence;
         public string experiment_sequence;
     }
     
@@ -90,7 +92,9 @@ public class ConfigurationManager : MonoBehaviour
             config = JsonUtility.FromJson<Configuration>(jsonContent);
 
             Debug.Log("Json file is read");
-            Debug.Log("Sequence" + config.experiment_sequence);
+            Debug.Log($"Participant ID: {config.id}");
+            Debug.Log($"Tutorial Sequence: {config.tutorial_sequence}");
+            Debug.Log($"Sequence: {config.experiment_sequence}");
         }
         else
         {

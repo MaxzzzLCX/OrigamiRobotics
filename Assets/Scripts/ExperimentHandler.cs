@@ -11,7 +11,7 @@ using Windows.Storage.Streams;
 
 public class ExperimentHandler
 {
-    private string expFolderName;
+    public string expFolderName;
 #if WINDOWS_UWP
     private Windows.Storage.StorageFile logFile;
     private Windows.Storage.StorageFile logTimeFile;
@@ -22,6 +22,7 @@ public class ExperimentHandler
     public ExperimentHandler()
     {
         expFolderName = $"exp_{System.DateTime.Now.ToString("yyyy-dd-MM-HH-mm-ss")}";
+        // expFolderName = folderName;
 
 #if WINDOWS_UWP
         storageFolder = Windows.Storage.ApplicationData.Current.LocalFolder;

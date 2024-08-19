@@ -58,6 +58,7 @@ public class NeuralNetworkController : MonoBehaviour
     public int lastModelId;
 
     private ExperimentHandler experimentHandler;
+    public ConfigurationManager configManager;
 
     void Start()
     {
