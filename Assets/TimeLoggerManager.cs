@@ -33,7 +33,7 @@ public class TimeLoggerManager: MonoBehaviour
         timeEndOfModel = DateTime.Now;
         durationModel = timeEndOfModel - timeStartOfModel;
 
-        string message = $"{id}, {DL}, {modelID}, {durationModel}";
+        string message = $"{id}, {DL}, {modelID}, {"-1"}, {durationModel}";
         // string message = $"({modelIndex}) Model {modelSymbol} is finished, duratation: {durationModel}";
         experimenHandler.LogMessage(message, true); //true meaning writing log into time_log.txt
     }
