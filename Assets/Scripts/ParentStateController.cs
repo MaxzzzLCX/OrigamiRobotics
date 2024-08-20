@@ -3,19 +3,19 @@ using UnityEngine;
 public class ParentStateController : MonoBehaviour
 {
     private GameObject[] children;
-    private int lastActiveChildIndex = -1; // Indeks ostatnio aktywnego dziecka
+    private int lastActiveChildIndex = -1; // Index of the last active child
 
-    // Zmienna do przechowywania niestandardowego stanu rodzica
+    // Variable to store the custom state of the parent
     private int parentStateCustom = 0;
 
-    // Publiczna w³aœciwoœæ do pobierania i ustawiania niestandardowego stanu rodzica
+    // Public property to get and set the custom state of the parent
     public int ParentStateCustom
     {
         get { return parentStateCustom; }
         set
         {
             parentStateCustom = value;
-            OnParentStateCustomChanged(); // Opcjonalnie: Mo¿esz wywo³aæ tutaj metodê, jeœli chcesz obs³u¿yæ zmianê.
+            OnParentStateCustomChanged(); // Optionally: You can call a method here if you want to handle the change.
         }
     }
 
@@ -51,7 +51,7 @@ public class ParentStateController : MonoBehaviour
             if (children[i].activeSelf)
             {
                 currentActiveChildIndex = i;
-                break; // Znaleziono aktywne dziecko, przerywamy pêtlê
+                break; // Active child found, break the loop
             }
         }
 
@@ -64,13 +64,13 @@ public class ParentStateController : MonoBehaviour
 
     private void UpdateParentState(int newState)
     {
-        Debug.Log("Stan rodzica zaktualizowany na: " + newState);
+        Debug.Log("Parent state updated to: " + newState);
     }
 
-    // Metoda wywo³ywana po zmianie ParentStateCustom
+    // Method called after changing ParentStateCustom
     private void OnParentStateCustomChanged()
     {
-        Debug.Log("Niestandardowy stan rodzica zmieniony na: " + parentStateCustom);
-        // Tutaj mo¿esz dodaæ dodatkow¹ logikê, która ma siê wykonaæ po zmianie wartoœci ParentStateCustom
+        Debug.Log("Custom parent state changed to: " + parentStateCustom);
+        // Here you can add additional logic that should be executed after changing the value of ParentStateCustom
     }
 }
