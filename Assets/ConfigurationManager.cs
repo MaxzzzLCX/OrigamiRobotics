@@ -19,6 +19,9 @@ public class ConfigurationManager : MonoBehaviour
 
     public int modelIndex = 0;
     public int tutorialIndex = 0;
+    public int DL = -1;
+    public int modelID = -1;
+    
 
     public UnityEvent EndOfExperiment;
     public UnityEvent EndOfTutorial;
@@ -28,6 +31,7 @@ public class ConfigurationManager : MonoBehaviour
     // Without this flag, the user can click the "Previous Arrow" when reaching the last folding stage, and click "Next Arrow" again. This will trigger Next model twice, thus skipping over the next origami model. 
 
     public TimeLoggerManager timeLoggerManager;
+
 
     // Start is called before the first frame update
     void Start()
@@ -87,6 +91,51 @@ public class ConfigurationManager : MonoBehaviour
         public string experiment_sequence;
     }
     
+    // Convert the symbol (a letter A to H) to (1) is DL active and (2) the ID of the model (1, 2, 3, 4, 5)
+    private void interpretModelSymbol(char symbol)
+    {
+        switch (symbol)
+        {
+            case 'A':
+                DL = 1;
+                modelID = 2;
+                break;
+            case 'B':
+                DL = 1;
+                modelID = 3;
+                break;
+            case 'C':
+                DL = 1;
+                modelID = 4;
+                break;
+            case 'D':
+                DL = 1;
+                modelID = 5;
+                break;
+            case 'E':
+                DL = 0;
+                modelID = 2;
+                break;
+            case 'F':
+                DL = 0;
+                modelID = 3;
+                break;
+            case 'G':
+                DL = 0;
+                modelID = 4;
+                break;
+            case 'H':
+                DL = 0;
+                modelID = 5;
+                break;
+            default:
+                DL = -1;
+                modelID = -1;
+                break;
+        }
+        // return (DL, modelID);
+    }
+
     private void LoadJson(string filePath)
     {
         if (File.Exists(filePath))
@@ -131,7 +180,7 @@ public class ConfigurationManager : MonoBehaviour
                     if (timeLoggerManager != null)
                     {
                         Debug.Log("[LOG] timeLoggerManager is not null");
-                        timeLoggerManager.endOfModel(modelIndex, config.experiment_sequence[modelIndex]);
+                        timeLoggerManager.endOfModel(config.id, DL, modelID);
                     }
                     else
                     {
@@ -182,6 +231,7 @@ public class ConfigurationManager : MonoBehaviour
 
     public void StartOfModel()
     {
+        interpretModelSymbol(config.experiment_sequence[modelIndex]);
         timeLoggerManager.startOfModel();
     }
 

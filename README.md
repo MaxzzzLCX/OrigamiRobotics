@@ -39,10 +39,15 @@ Before the experiment, prepare the document. Then, go to the Device Web Portal o
 to the directary U:\Users\<User>\AppData\Local\Packages\<Project Name>\LocalCache. 
 
 ## Experiment Logging
-Experiment data is logged into two files: experiment_log.txt (for all validation results) and time_log.txt (for all durations).
+Experiment data is logged into two files: validation_log_.txt (for all validation results) and time_log.txt (for all durations).
 These files are stored into a folder (date and time of when the experiment is conducted) in the directory U:\Users\<User>\AppData\Local\Packages\<Project Name>\LocalState. 
 
 The format of the logging files, please refer to the experiment_log.txt and time_log.txt in this repository as an example. 
+
+### Format of Log Files
+time_log.txt file is in the format of:
+- <b>For each step</b>: timestamp, participant_id, is_validation_activated (0 for no DL, 1 for DL), model_id (1,2,3,4,5), step (step of folding), duration_of_step
+- <b>For the end of a model</b>: timestamp, participant_id, is_validation_activated (0 for no DL, 1 for DL), model_id (1,2,3,4,5), duration_of_model
 
 
 ## Progress

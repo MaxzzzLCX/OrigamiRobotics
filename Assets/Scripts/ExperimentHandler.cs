@@ -55,7 +55,7 @@ public class ExperimentHandler
     {
 #if WINDOWS_UWP
         if(logFile == null){
-            logFile = await expFolder.CreateFileAsync("experiment_log.txt", Windows.Storage.CreationCollisionOption.ReplaceExisting);
+            logFile = await expFolder.CreateFileAsync("validation_log.txt", Windows.Storage.CreationCollisionOption.ReplaceExisting);
         }
         Task task = new Task(
         async () =>

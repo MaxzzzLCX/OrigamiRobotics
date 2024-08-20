@@ -10,6 +10,7 @@ public class FoldSwitcher : MonoBehaviour
     private int currentIndex = -1;
 
     public TimeLoggerManager timeLoggerManager;
+    public ConfigurationManager configManager;
 
     void Start()
     {
@@ -43,11 +44,11 @@ public class FoldSwitcher : MonoBehaviour
 
         UpdateArrows();
     }
-
+    
     public void NextFold() //Everytime the next button is pressed, it triggers the time logging
     {
         folds[currentIndex].SetActive(false);
-        timeLoggerManager.endOfStep(currentIndex);
+        timeLoggerManager.endOfStep(configManager.config.id, configManager.DL, configManager.modelID, currentIndex);
 
         currentIndex = (currentIndex + 1) % folds.Length;
         folds[currentIndex].SetActive(true);
@@ -128,6 +129,6 @@ public class FoldSwitcher : MonoBehaviour
     }
     public void EndOfStep()
     {
-        timeLoggerManager.endOfStep(currentIndex);
+        timeLoggerManager.endOfStep(configManager.config.id, configManager.DL, configManager.modelID, currentIndex);
     }
 }

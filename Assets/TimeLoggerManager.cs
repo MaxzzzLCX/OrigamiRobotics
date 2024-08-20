@@ -16,6 +16,7 @@ public class TimeLoggerManager: MonoBehaviour
     public DateTime timeEndOfStep;
     public TimeSpan durationModel;
     public TimeSpan durationStep;
+    
 
 
     void Start()
@@ -27,11 +28,13 @@ public class TimeLoggerManager: MonoBehaviour
     {
         timeStartOfModel = DateTime.Now;
     }
-    public void endOfModel(int modelIndex, char modelSymbol) 
+    public void endOfModel(string id, int DL, int modelID) 
     {
         timeEndOfModel = DateTime.Now;
         durationModel = timeEndOfModel - timeStartOfModel;
-        string message = $"({modelIndex}) Model {modelSymbol} is finished, duratation: {durationModel}";
+
+        string message = $"{id}, {DL}, {modelID}, {durationModel}";
+        // string message = $"({modelIndex}) Model {modelSymbol} is finished, duratation: {durationModel}";
         experimenHandler.LogMessage(message, true); //true meaning writing log into time_log.txt
     }
 
@@ -41,11 +44,11 @@ public class TimeLoggerManager: MonoBehaviour
         timeStartOfStep = DateTime.Now;
     }
    
-    public void endOfStep(int stepIndex)
+    public void endOfStep(string id, int DL, int modelID, int stepIndex)
     {
         timeEndOfStep = DateTime.Now;
         durationStep = timeEndOfStep - timeStartOfStep;
-        string message = $"Step {stepIndex} duratation: {durationStep}";
+        string message = $"{id}, {DL}, {modelID}, {stepIndex}, {durationStep}";
         experimenHandler.LogMessage(message, true); //true meaning writing log into time_log.txt
     }
 
