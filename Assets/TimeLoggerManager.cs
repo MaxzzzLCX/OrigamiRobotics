@@ -36,6 +36,7 @@ public class TimeLoggerManager: MonoBehaviour
         string message = $"{id}, {DL}, {modelID}, {"-1"}, {durationModel}";
         // string message = $"({modelIndex}) Model {modelSymbol} is finished, duratation: {durationModel}";
         experimenHandler.LogMessage(message, true); //true meaning writing log into time_log.txt
+        Debug.Log($"LOG END OF MODEL for {modelID}");
     }
 
 
@@ -50,6 +51,7 @@ public class TimeLoggerManager: MonoBehaviour
         durationStep = timeEndOfStep - timeStartOfStep;
         string message = $"{id}, {DL}, {modelID}, {stepIndex}, {durationStep}";
         experimenHandler.LogMessage(message, true); //true meaning writing log into time_log.txt
+        Debug.Log($"LOG END OF STEP for {modelID}, {stepIndex}");
     }
 
 }

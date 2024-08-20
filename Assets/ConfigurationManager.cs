@@ -194,6 +194,7 @@ public class ConfigurationManager : MonoBehaviour
                 else
                 {
                     Debug.LogError("Experiment finished");
+                    timeLoggerManager.endOfModel(config.id, DL, modelID);
                     EndOfExperiment.Invoke();
                 }
             }
