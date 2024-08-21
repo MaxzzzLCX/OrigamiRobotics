@@ -8,7 +8,7 @@ Prepare the configuration document named "experiment_configuration.json". The fo
 {
   "id": "1",
   "tutorial_mode": "0",
-  "tutorial_sequence": "10",
+  "tutorial_sequence": "YN",
   "experiment_sequence": "ABCDEFGH"
 }
 ```
@@ -16,9 +16,9 @@ Prepare the configuration document named "experiment_configuration.json". The fo
 <b><u>Tutorial Mode</u></b><br>
 This is a 0/1 value. 0 means experiment mode and 1 means tutorial mode. It will trigger either tutorial_sequence or experiment_sequence accordingly.<br><br>
 <b><u>Tutorial Sequence</u></b><br>
-A sequence of two numbers (0/1) that indicates the order of tutorial.
-- 0 refers to tutorial without DL
-- 1 refers to tutorial with DL
+A sequence of two letters (N/Y) that indicates the order of tutorial.
+- N refers to tutorial without DL
+- Y refers to tutorial with DL
 <br><br>
 
 <b><u>Experiment Sequence</u></b><br>
@@ -51,6 +51,7 @@ time_log.txt file is in the format of:
 
 
 ## Progress
+2024.08.21 User has to pass validation to move on to next step. <br>
 2024.08.19 Updated the json format and completed the tutorial section. By editing the json file to switch in between experiment and tutorial mode. <br>
 2024.08.16 Added experiment logging functionality. The result of validation is logged in one file, and time related information logged into another file. <br>
 2024.08.16 Fixed bugs from 08.15 <br>

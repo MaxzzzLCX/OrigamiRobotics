@@ -7,6 +7,7 @@ public class FoldSwitcher : MonoBehaviour
     public GameObject previousArrow; // 3D object for the "Previous" arrow
 
     private GameObject[] folds;
+    public bool[] validated; // Keep record of which steps have passed validation, thus can move on. 
     private int currentIndex = -1;
 
     public TimeLoggerManager timeLoggerManager;
@@ -17,6 +18,33 @@ public class FoldSwitcher : MonoBehaviour
         // Initialization and finding children that start with "FOLD_"
         int children = parentObject.transform.childCount;
         folds = new GameObject[children];
+        validated = new bool[children];
+
+        // Initialize the validated array depending on whether the current model is with or without DL
+        Debug.Log($"DL is {configManager.DL}");
+
+        if (configManager.DL == 1)
+        {
+            for (int i = 0; i < children; i++)
+            {
+                validated[i] = false;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < children; i++)
+            {
+                validated[i] = true;
+            }
+        }
+
+        // DEBUG purpose
+        Debug.Log("[VAL] Print validated array");
+        for (int i = 0; i < children; i++)
+        {
+            Debug.Log($"{i}: {validated[i]}");
+        }
+
         bool activeFoldFound = false;
 
         for (int i = 0; i < children; ++i)
@@ -73,7 +101,9 @@ public class FoldSwitcher : MonoBehaviour
         previousArrow.SetActive(currentIndex > 0);
 
         // Disable the "Next" arrow when the last FOLD is active
-        nextArrow.SetActive(currentIndex < folds.Length - 1);
+        // Only show next step button if the current step passes validation 
+        nextArrow.SetActive(currentIndex < folds.Length - 1 && validated[currentIndex]);
+        Debug.Log($"Update arrow: validation status of current step {validated[currentIndex]}");
     }
 
 
@@ -94,6 +124,7 @@ public class FoldSwitcher : MonoBehaviour
             currentIndex = 0;
             Debug.Log("Current Index RESET to 0");
             RestartFoldingStageDisplay();
+            ResetArrowValidationRecord();
             UpdateArrows();
         }
     }
@@ -130,5 +161,38 @@ public class FoldSwitcher : MonoBehaviour
     public void EndOfStep()
     {
         timeLoggerManager.endOfStep(configManager.config.id, configManager.DL, configManager.modelID, currentIndex);
+    }
+
+    public void UpdateArrowValidationRecord()
+    {
+        validated[currentIndex] = true;
+        Debug.Log("[VAL] Validation passed, update validated array");
+        Debug.Log($"{currentIndex}: {validated[currentIndex]}");
+        UpdateArrows();
+    }
+    public void ResetArrowValidationRecord()
+    {
+        int children = parentObject.transform.childCount;
+        if (configManager.DL == 1)
+        {
+            for (int i = 0; i < children; i++)
+            {
+                validated[i] = false;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < children; i++)
+            {
+                validated[i] = true;
+            }
+        }
+
+        // DEBUG purpose
+        Debug.Log("[VAL] RESET validated array");
+        for (int i = 0; i < children; i++)
+        {
+            Debug.Log($"{i}: {validated[i]}");
+        }
     }
 }

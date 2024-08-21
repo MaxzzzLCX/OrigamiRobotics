@@ -13,6 +13,9 @@ public class ValidateButtonAppearanceManager : MonoBehaviour
     private string tutorialSequence;
     private string tutorialMode;
 
+    private int chosenIndex;
+    private string chosenSequence;
+
     private void OnEnable()
     {
         modelIndex = configManager.modelIndex;
@@ -21,7 +24,30 @@ public class ValidateButtonAppearanceManager : MonoBehaviour
         // json_config = configManager.config;
         modelSequence = configManager.config.experiment_sequence;
         tutorialSequence = configManager.config.tutorial_sequence;
-       
+
+        chosenSequence = configManager.chosenSequence;
+        chosenIndex = configManager.chosenIndex;
+
+
+        char current = chosenSequence[chosenIndex];
+
+        if (current != null)
+        {
+            if (current == 'E' || current == 'F' || current == 'G' || current == 'H' || current == 'N')
+            {
+                Debug.Log("Current letter is " + current + " , thus hide validation button");
+                gameObject.SetActive(false);
+            }
+            else
+            {
+                Debug.Log("Current letter is " + current + " , thus show validation button");
+            }
+
+        }
+
+
+        /*
+         * [OLD]
         if (tutorialMode == "0")
         {
             Debug.Log("NOW IS EXPERIMENT");
@@ -68,6 +94,7 @@ public class ValidateButtonAppearanceManager : MonoBehaviour
                 Debug.Log("No Valid Character");
             }
         }
-        
+        */
+
     }
 }

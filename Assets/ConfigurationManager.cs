@@ -21,7 +21,10 @@ public class ConfigurationManager : MonoBehaviour
     public int tutorialIndex = 0;
     public int DL = -1;
     public int modelID = -1;
-    
+
+    public string chosenSequence; //depending on tutorial_mode (0/1), this will be set as the experiment/tutorial sequence
+    public int chosenIndex = 0; //depending on tutorial_mode (0/1), this will be set as the experiment/tutorial index
+
 
     public UnityEvent EndOfExperiment;
     public UnityEvent EndOfTutorial;
@@ -44,12 +47,23 @@ public class ConfigurationManager : MonoBehaviour
         
 
         
-        Debug.Log("Path of JSON file: " + _settingsPath);
+        // Debug.Log("Path of JSON file: " + _settingsPath);
 
         if (File.Exists(_settingsPath))
         {
-            Debug.Log("Path Exist");
+            // Debug.Log("Path Exist");
             LoadJson(_settingsPath);
+
+            if (config.tutorial_mode == "0")
+            {
+                chosenSequence = config.experiment_sequence;
+                Debug.Log($"chosenSequence set to {chosenSequence}");
+            }
+            else
+            {
+                chosenSequence = config.tutorial_sequence;
+                Debug.Log($"chosenSequence set to {chosenSequence}");
+            }
         }
         else
         {
@@ -94,6 +108,7 @@ public class ConfigurationManager : MonoBehaviour
     // Convert the symbol (a letter A to H) to (1) is DL active and (2) the ID of the model (1, 2, 3, 4, 5)
     private void interpretModelSymbol(char symbol)
     {
+        Debug.Log($"[VAL] {symbol}");
         switch (symbol)
         {
             case 'A':
@@ -128,12 +143,20 @@ public class ConfigurationManager : MonoBehaviour
                 DL = 0;
                 modelID = 5;
                 break;
+            case 'N':
+                DL = 0;
+                modelID = 1;
+                break;
+            case 'Y':
+                DL = 1;
+                modelID = 1;
+                break;
             default:
                 DL = -1;
                 modelID = -1;
                 break;
         }
-        // return (DL, modelID);
+        
     }
 
     private void LoadJson(string filePath)
@@ -173,6 +196,31 @@ public class ConfigurationManager : MonoBehaviour
             }
 
 
+            if (config != null && chosenIndex + 1 < chosenSequence.Length)
+            {
+                if (timeLoggerManager != null)
+                {
+                    Debug.Log("[LOG] timeLoggerManager is not null");
+                    timeLoggerManager.endOfModel(config.id, DL, modelID);
+                }
+                else
+                {
+                    Debug.Log("[LOG] timeLoggerManager is null");
+                }
+
+
+                chosenIndex += 1;
+                Debug.LogError("Model " + chosenSequence[chosenIndex - 1] + "finished. Next model: " + chosenSequence[chosenIndex]);
+            }
+            else
+            {
+                Debug.LogError("Experiment finished");
+                timeLoggerManager.endOfModel(config.id, DL, modelID);
+                EndOfExperiment.Invoke();
+            }
+
+            /*
+             * [OLD]
             if (config.tutorial_mode == "0")
             {
                 if (config != null && modelIndex + 1 < config.experiment_sequence.Length)
@@ -203,7 +251,7 @@ public class ConfigurationManager : MonoBehaviour
 
                 if (config != null && tutorialIndex + 1 < config.tutorial_sequence.Length)
                 {
-                    /*
+                    
                     if (timeLoggerManager != null)
                     {
                         Debug.Log("[LOG] timeLoggerManager is not null");
@@ -213,7 +261,7 @@ public class ConfigurationManager : MonoBehaviour
                     {
                         Debug.Log("[LOG] timeLoggerManager is null");
                     }
-                    */
+                    
 
                     tutorialIndex += 1;
                     Debug.LogError("Model " + config.tutorial_sequence[tutorialIndex - 1] + "finished. Next model: " + config.tutorial_sequence[tutorialIndex]);
@@ -223,7 +271,8 @@ public class ConfigurationManager : MonoBehaviour
                     Debug.LogError("Tutorial finished");
                     EndOfTutorial.Invoke();
                 }
-            }
+            }*/
+    
 
             
            
@@ -232,8 +281,21 @@ public class ConfigurationManager : MonoBehaviour
 
     public void StartOfModel()
     {
-        interpretModelSymbol(config.experiment_sequence[modelIndex]);
+        interpretModelSymbol(chosenSequence[chosenIndex]);
         timeLoggerManager.startOfModel();
+        /*
+        [OLD]
+        if (config.tutorial_mode == "0")
+        {
+            interpretModelSymbol(config.experiment_sequence[modelIndex]);
+            timeLoggerManager.startOfModel();
+        }
+        else
+        {
+            interpretModelSymbol(config.tutorial_sequence[tutorialIndex]);
+        }
+        */
+        
     }
 
 
