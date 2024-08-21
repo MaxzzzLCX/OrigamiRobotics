@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections;
+using System;
 
 public class ValidateCheckCustomScript : MonoBehaviour
 {
@@ -13,6 +14,12 @@ public class ValidateCheckCustomScript : MonoBehaviour
     public UnityEvent onMatch;
     public UnityEvent onMismatch;
 
+    public FoldSwitcher foldSwitcher;
+
+    public DateTime timeStartOfValidation;
+    public DateTime timeEndOfValidation;
+    public TimeSpan validationDuration;
+
     public void CheckParentStateCustom()
     {
         if (parentStateController == null || neuralNetworkController == null)
@@ -22,6 +29,7 @@ public class ValidateCheckCustomScript : MonoBehaviour
         }
 
         // Rozpocznij coroutine, która kontroluje proces
+        timeStartOfValidation = DateTime.Now;
         StartCoroutine(ControlObjectRoutine());
     }
 
@@ -43,9 +51,13 @@ public class ValidateCheckCustomScript : MonoBehaviour
         int currentState = parentStateController.ParentStateCustom; // Zmienione na ParentStateCustom
         int predictedState = neuralNetworkController.Validate();
 
-        Debug.Log($"Aktualny niestandardowy stan rodzica: {currentState}, Predykowany stan: {predictedState}");
+        timeEndOfValidation = DateTime.Now;
+        validationDuration = timeEndOfValidation - timeStartOfValidation;
+        int numFailure = foldSwitcher.failureCount[foldSwitcher.currentIndex];
+        Debug.Log($"Current parent state: {currentState}, Predicted state: {predictedState}, Number of Failure: {numFailure}");
 
-        neuralNetworkController.LogMessage($"{neuralNetworkController.lastModelId}, {currentState}, {predictedState}");
+        neuralNetworkController.LogMessage($"{neuralNetworkController.lastModelId}, {currentState}, {predictedState}, {numFailure}, {validationDuration}");
+
 
         if (currentState == predictedState)
         {

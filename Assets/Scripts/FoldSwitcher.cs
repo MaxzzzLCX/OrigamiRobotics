@@ -8,7 +8,8 @@ public class FoldSwitcher : MonoBehaviour
 
     private GameObject[] folds;
     public bool[] validated; // Keep record of which steps have passed validation, thus can move on. 
-    private int currentIndex = -1;
+    public int[] failureCount; // Keep record of the number of times that the validation has failed on this step
+    public int currentIndex = -1;
 
     public TimeLoggerManager timeLoggerManager;
     public ConfigurationManager configManager;
@@ -19,6 +20,7 @@ public class FoldSwitcher : MonoBehaviour
         int children = parentObject.transform.childCount;
         folds = new GameObject[children];
         validated = new bool[children];
+        failureCount = new int[children];
 
         // Initialize the validated array depending on whether the current model is with or without DL
         Debug.Log($"DL is {configManager.DL}");
@@ -28,6 +30,7 @@ public class FoldSwitcher : MonoBehaviour
             for (int i = 0; i < children; i++)
             {
                 validated[i] = false;
+                failureCount[i] = 0;
             }
         }
         else
@@ -35,6 +38,7 @@ public class FoldSwitcher : MonoBehaviour
             for (int i = 0; i < children; i++)
             {
                 validated[i] = true;
+                failureCount[i] = 0;
             }
         }
 
@@ -101,8 +105,8 @@ public class FoldSwitcher : MonoBehaviour
         previousArrow.SetActive(currentIndex > 0);
 
         // Disable the "Next" arrow when the last FOLD is active
-        // Only show next step button if the current step passes validation 
-        nextArrow.SetActive(currentIndex < folds.Length - 1 && validated[currentIndex]);
+        // Only show next step button if the current step passes validation OR failing 3 times. 
+        nextArrow.SetActive(currentIndex < folds.Length - 1 && (validated[currentIndex] || failureCount[currentIndex] > 2));
         Debug.Log($"Update arrow: validation status of current step {validated[currentIndex]}");
     }
 
@@ -170,6 +174,13 @@ public class FoldSwitcher : MonoBehaviour
         Debug.Log($"{currentIndex}: {validated[currentIndex]}");
         UpdateArrows();
     }
+    public void UpdateArrowValidationFailureCount()
+    {
+        failureCount[currentIndex] += 1;
+        Debug.Log($"Failure. Now the failureCount is {failureCount[currentIndex]}");
+        UpdateArrows();
+    }
+
     public void ResetArrowValidationRecord()
     {
         int children = parentObject.transform.childCount;
@@ -178,6 +189,7 @@ public class FoldSwitcher : MonoBehaviour
             for (int i = 0; i < children; i++)
             {
                 validated[i] = false;
+                failureCount[i] = 0;
             }
         }
         else
@@ -185,6 +197,7 @@ public class FoldSwitcher : MonoBehaviour
             for (int i = 0; i < children; i++)
             {
                 validated[i] = true;
+                failureCount[i] = 0;
             }
         }
 
@@ -195,4 +208,5 @@ public class FoldSwitcher : MonoBehaviour
             Debug.Log($"{i}: {validated[i]}");
         }
     }
+
 }

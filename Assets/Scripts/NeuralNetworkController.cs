@@ -76,7 +76,7 @@ public class NeuralNetworkController : MonoBehaviour
 
         boxes = new List<DetectionResult>();
 
-        experimentHandler = new ExperimentHandler();
+        experimentHandler = new ExperimentHandler(configManager.config.id);
     }
 
     // Update is called once per frame

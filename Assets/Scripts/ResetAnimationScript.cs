@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ResetAnimationScript : MonoBehaviour
 {
-    // Publiczna metoda do resetowania animacji
+    // Public method to reset animations
     public void ResetAnimations()
     {
         foreach (Transform child in transform)
@@ -15,7 +15,7 @@ public class ResetAnimationScript : MonoBehaviour
         }
     }
 
-    // Prywatna metoda do resetowania animacji i prze³¹czania stanu na konkretnym GameObject
+    // Private method to reset animations and toggle state on a specific GameObject
     private void ResetAndToggleAnimationOnGameObject(GameObject obj)
     {
         Animator animator = obj.GetComponent<Animator>();
@@ -32,7 +32,7 @@ public class ResetAnimationScript : MonoBehaviour
             animation.Play();
         }
 
-        // Sprawdza, czy obiekt ma przypisany skrypt AnimationController i wywo³uje ToggleAnimation
+        // Checks if the object has an assigned AnimationController script and invokes ToggleAnimation
         AnimationController animationController = obj.GetComponent<AnimationController>();
         if (animationController != null)
         {
@@ -40,7 +40,7 @@ public class ResetAnimationScript : MonoBehaviour
         }
     }
 
-    // Prywatna metoda rekurencyjna do przeszukiwania i resetowania animacji
+    // Private recursive method to traverse and reset animations
     private void ResetAnimationsRecursive(Transform parent)
     {
         foreach (Transform child in parent)

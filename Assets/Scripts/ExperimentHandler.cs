@@ -12,6 +12,10 @@ using Windows.Storage.Streams;
 public class ExperimentHandler
 {
     public string expFolderName;
+    public string userID;
+
+    
+
 #if WINDOWS_UWP
     private Windows.Storage.StorageFile logFile;
     private Windows.Storage.StorageFile logTimeFile;
@@ -19,9 +23,10 @@ public class ExperimentHandler
     private Windows.Storage.StorageFolder storageFolder;
 #endif
 
-    public ExperimentHandler()
+    public ExperimentHandler(string userId)
     {
-        expFolderName = $"exp_{System.DateTime.Now.ToString("yyyy-dd-MM-HH-mm-ss")}";
+        this.userID = userId;
+        expFolderName = expFolderName = $"participant_{userId}";
         // expFolderName = folderName;
 
 #if WINDOWS_UWP
@@ -55,7 +60,7 @@ public class ExperimentHandler
     {
 #if WINDOWS_UWP
         if(logFile == null){
-            logFile = await expFolder.CreateFileAsync("validation_log.txt", Windows.Storage.CreationCollisionOption.ReplaceExisting);
+            logFile = await expFolder.CreateFileAsync($"validation_log_{userID}.txt", Windows.Storage.CreationCollisionOption.ReplaceExisting);
         }
         Task task = new Task(
         async () =>
@@ -72,7 +77,7 @@ public class ExperimentHandler
     {
 #if WINDOWS_UWP
         if(logTimeFile == null){
-            logTimeFile = await expFolder.CreateFileAsync("time_log.txt", Windows.Storage.CreationCollisionOption.ReplaceExisting);
+            logTimeFile = await expFolder.CreateFileAsync($"time_log_{userID}.txt", Windows.Storage.CreationCollisionOption.ReplaceExisting);
         }
         Task task = new Task(
         async () =>

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections;
+using System;
 
 public class ValidateCheck : MonoBehaviour
 {
@@ -13,6 +14,12 @@ public class ValidateCheck : MonoBehaviour
     public UnityEvent onMatch;
     public UnityEvent onMismatch;
 
+    public FoldSwitcher foldSwitcher;
+
+    public DateTime timeStartOfValidation;
+    public DateTime timeEndOfValidation;
+    public TimeSpan validationDuration;
+
     public void CheckParentState()
     {
         if (parentStateController == null || neuralNetworkController == null)
@@ -22,6 +29,7 @@ public class ValidateCheck : MonoBehaviour
         }
 
         // Start the coroutine that controls the process
+        timeStartOfValidation = DateTime.Now;
         StartCoroutine(ControlObjectRoutine());
     }
 
@@ -43,9 +51,12 @@ public class ValidateCheck : MonoBehaviour
         int currentState = parentStateController.ParentState + 1;
         int predictedState = neuralNetworkController.Validate();
 
-        Debug.Log($"Current parent state: {currentState}, Predicted state: {predictedState}");
+        timeEndOfValidation = DateTime.Now;
+        validationDuration = timeEndOfValidation - timeStartOfValidation;
+        int numFailure = foldSwitcher.failureCount[foldSwitcher.currentIndex];
+        Debug.Log($"Current parent state: {currentState}, Predicted state: {predictedState}, Number of Failure: {numFailure}");
 
-        neuralNetworkController.LogMessage($"{neuralNetworkController.lastModelId}, {currentState}, {predictedState}");
+        neuralNetworkController.LogMessage($"{neuralNetworkController.lastModelId}, {currentState}, {predictedState}, {numFailure}, {validationDuration}");
 
         if (currentState == predictedState)
         {

@@ -37,7 +37,7 @@ public class ConfigurationManager : MonoBehaviour
 
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         #if WINDOWS_UWP
         _settingsPath = Path.Combine(ApplicationData.Current.LocalCacheFolder.Path, _filename);
@@ -211,6 +211,7 @@ public class ConfigurationManager : MonoBehaviour
 
                 chosenIndex += 1;
                 Debug.LogError("Model " + chosenSequence[chosenIndex - 1] + "finished. Next model: " + chosenSequence[chosenIndex]);
+                interpretModelSymbol(chosenSequence[chosenIndex]);
             }
             else
             {

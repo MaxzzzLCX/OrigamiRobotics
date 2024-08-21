@@ -16,12 +16,15 @@ public class TimeLoggerManager: MonoBehaviour
     public DateTime timeEndOfStep;
     public TimeSpan durationModel;
     public TimeSpan durationStep;
+
+    public ConfigurationManager configurationManager;
+
     
 
 
     void Start()
     {
-        experimenHandler = new ExperimentHandler();
+        experimenHandler = new ExperimentHandler(configurationManager.config.id);
     }
 
     public void startOfModel() // When the <STEP> object of origami model appears, this function is called
