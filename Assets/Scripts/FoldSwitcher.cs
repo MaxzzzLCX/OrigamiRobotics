@@ -93,6 +93,12 @@ public class FoldSwitcher : MonoBehaviour
     {
         folds[currentIndex].SetActive(false);
 
+        // a bug exists in Fold step 17 of model 3 (after the animation is played, the model shown becomes fold step 18. thus will not disappear if previousfold arrow is clicked)
+        // this statement is specifically used to tackle that problem - to also hide the next step in addition to current step when the previous arrow is clicked
+        if (currentIndex + 1 < folds.Length){
+            folds[currentIndex + 1].SetActive(false);
+        }
+
         currentIndex = (currentIndex - 1 + folds.Length) % folds.Length;
         folds[currentIndex].SetActive(true);
 

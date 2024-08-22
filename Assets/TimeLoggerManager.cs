@@ -24,7 +24,7 @@ public class TimeLoggerManager: MonoBehaviour
 
     void Start()
     {
-        experimenHandler = new ExperimentHandler(configurationManager.config.id);
+        experimenHandler = new ExperimentHandler(configurationManager.config.id, configurationManager.config.trial);
     }
 
     public void startOfModel() // When the <STEP> object of origami model appears, this function is called

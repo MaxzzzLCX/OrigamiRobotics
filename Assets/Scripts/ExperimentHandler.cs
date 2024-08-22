@@ -13,6 +13,7 @@ public class ExperimentHandler
 {
     public string expFolderName;
     public string userID;
+    public string trial; // The number of trial of the current user (useful if we decide to split the experiment into 4 and 4)
 
     
 
@@ -23,9 +24,10 @@ public class ExperimentHandler
     private Windows.Storage.StorageFolder storageFolder;
 #endif
 
-    public ExperimentHandler(string userId)
+    public ExperimentHandler(string userId, string trial)
     {
         this.userID = userId;
+        this.trial = trial;
         expFolderName = expFolderName = $"participant_{userId}";
         // expFolderName = folderName;
 
@@ -34,7 +36,7 @@ public class ExperimentHandler
         Task task = new Task(
             async () =>
             {
-                expFolder = await storageFolder.CreateFolderAsync(expFolderName, Windows.Storage.CreationCollisionOption.ReplaceExisting);
+                expFolder = await storageFolder.CreateFolderAsync(expFolderName, Windows.Storage.CreationCollisionOption.OpenIfExists);
             }
             );
         task.Start();
@@ -60,7 +62,7 @@ public class ExperimentHandler
     {
 #if WINDOWS_UWP
         if(logFile == null){
-            logFile = await expFolder.CreateFileAsync($"validation_log_{userID}.txt", Windows.Storage.CreationCollisionOption.ReplaceExisting);
+            logFile = await expFolder.CreateFileAsync($"validation_log_{userID}_{trial}.txt", Windows.Storage.CreationCollisionOption.ReplaceExisting);
         }
         Task task = new Task(
         async () =>
@@ -77,7 +79,7 @@ public class ExperimentHandler
     {
 #if WINDOWS_UWP
         if(logTimeFile == null){
-            logTimeFile = await expFolder.CreateFileAsync($"time_log_{userID}.txt", Windows.Storage.CreationCollisionOption.ReplaceExisting);
+            logTimeFile = await expFolder.CreateFileAsync($"time_log_{userID}_{trial}.txt", Windows.Storage.CreationCollisionOption.ReplaceExisting);
         }
         Task task = new Task(
         async () =>

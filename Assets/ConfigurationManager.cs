@@ -100,6 +100,7 @@ public class ConfigurationManager : MonoBehaviour
     public class Configuration
     {
         public string id;
+        public string trial;
         public string tutorial_mode;
         public string tutorial_sequence;
         public string experiment_sequence;
@@ -168,6 +169,7 @@ public class ConfigurationManager : MonoBehaviour
 
             Debug.Log("Json file is read");
             Debug.Log($"Participant ID: {config.id}");
+            Debug.Log($"Trial: {config.trial}");
             Debug.Log($"Tutorial status: {config.tutorial_mode}");
             Debug.Log($"Tutorial Sequence: {config.tutorial_sequence}");
             Debug.Log($"Sequence: {config.experiment_sequence}");

@@ -1,6 +1,7 @@
 {
-  "id": "1",
-  "tutorial_mode": "0",
+  "id": "2",
+  "trial": "0",
+  "tutorial_mode": "1",
   "tutorial_sequence": "NY",
-  "experiment_sequence": "EFGHABCD"
+  "experiment_sequence": "CD"
 }
