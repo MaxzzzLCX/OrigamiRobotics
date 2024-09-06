@@ -1,4 +1,4 @@
-# origami
+# AR Origami with Validation
 
 This branch aims to attach a configuration file to the Unity project, 
 so the experiment can be conducted with customized order of origami model every time without needing to rebuild or redeploy the entire project. 
