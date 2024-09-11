@@ -15,6 +15,13 @@ public class AnimationControllerNew : MonoBehaviour
     private string nameAnim1;
     private string nameAnim2;
 
+    private Vector3 initialPosition1;
+    private Quaternion initialRotation1;
+    private Vector3 initialScale1;
+    private Vector3 initialPosition2;
+    private Quaternion initialRotation2;
+    private Vector3 initialScale2;
+
     void Start()
     {
         // Assign the Animators and GameObjects (drag and drop in Inspector or find them via script)
@@ -29,9 +36,66 @@ public class AnimationControllerNew : MonoBehaviour
 
         nameAnim1 = "FOLD" + startIndex;
         nameAnim2 = "FOLD" + endIndex;
+
     }
 
-    // Prase the name of the gameobjects - retrieves their index - used to find the corresponding name of the animations
+    public void PlayFirstAnimation()
+    {
+        Debug.Log("**Fold first animation");
+        //fold1Animator.SetBool("OnDemonstration", true);
+        fold1Animator.Play(nameAnim1, 0, 0f);
+    }
+    public void TransitionToNextStage()
+    {
+        stage1.SetActive(false);
+        stage2.SetActive(true);
+        Debug.Log("**Transition to next");
+        //fold2Animator.SetBool("OnDemonstration", true);
+        fold2Animator.Play(nameAnim2, 0, 0f);
+    }
+
+    public void ResetAnimation()
+    {
+        // The few lines below tries to revert the first gameobject to initial state whenever hover exits
+        // Before rebind, enter the folding state.
+        // If rebinding in idle state will not revert object to initial unfolded state
+
+
+        stage1.SetActive(true);
+        fold1Animator.Play(nameAnim1, 0, 0f);
+
+        StartCoroutine(DelayRebindWithDeactivate());
+
+       
+        //fold1Animator.Rebind();
+        //fold1Animator.Update(0); // Forces the animator to apply the new state immediately
+
+        // stage 2 doesn't have to be reset because it will be hided
+        // the next time hover is on, it will play the animation, and second animation will automatically be played from beginning when first animation finishes
+        fold2Animator.Rebind();
+        fold2Animator.Update(0);
+        stage1.SetActive(true);
+        stage2.SetActive(false);
+        
+    }
+
+    private IEnumerator DelayRebindWithDeactivate()
+    {
+        // Wait one frame
+        yield return null;
+
+        // Forcefully reset fold1 by temporarily deactivating it
+        stage1.SetActive(false); // Disable stage1 to reset its state
+        yield return null;  // Wait one more frame to ensure the deactivation happens
+
+        // Re-enable and reset the animator
+        stage1.SetActive(true);
+        fold1Animator.Rebind();  // Reset the animator to its default state
+        fold1Animator.Update(0);
+
+        Debug.Log("Animator has been successfully reset.");
+    }
+
     public string RetrieveStageInfo(GameObject stage)
     {
         // Get the name of the GameObject (e.g., "STAGE_1" or "STAGE_13")
@@ -49,6 +113,32 @@ public class AnimationControllerNew : MonoBehaviour
         }
         return "";
     }
+
+    /*
+     * Code used on Sept 10th
+    private void StoreInitialState()
+    {
+        initialPosition1 = stage1.transform.position;
+        initialRotation1 = stage1.transform.rotation;
+        initialScale1 = stage1.transform.localScale;
+        initialPosition2 = stage2.transform.position;
+        initialRotation2 = stage2.transform.rotation;
+        initialScale2 = stage2.transform.localScale;
+    }
+
+    
+    private void RevertInitialState()
+    {
+        stage1.transform.position = initialPosition1;
+        stage1.transform.rotation = initialRotation1;
+        stage1.transform.localScale = initialScale1;
+        stage2.transform.position = initialPosition2;
+        stage2.transform.rotation = initialRotation2;
+        stage2.transform.localScale = initialScale2;
+    }
+
+    // Prase the name of the gameobjects - retrieves their index - used to find the corresponding name of the animations
+    
 
 
     public void FoldTwoSteps()
@@ -94,7 +184,19 @@ public class AnimationControllerNew : MonoBehaviour
         fold2Animator.Play(nameAnim2, 0, 0f);
     }
 
+    public void ResetDemosntration()
+    {
+        Debug.Log("Reset folding on hover exit");
+        fold1Animator.SetBool("OnDemonstration", false);
+        fold2Animator.SetBool("OnDemonstration", false);
+        fold1Animator.Rebind();
+        fold1Animator.Update(0);  // Ensure the animator updates immediately
+        fold2Animator.Rebind();
+        fold2Animator.Update(0);  // Ensure the animator updates immediately
 
+        RevertInitialState();
+    }
+    */
 
     /*
      public Animator animator;
