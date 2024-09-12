@@ -10,6 +10,7 @@ public class AnimationEventBridge : MonoBehaviour
     // Start is called before the first frame update
     public void AnimationTransitionEvent()
     {
+        Debug.Log("Current animation finished. Received end event.");
         onAnimationEventTransition.Invoke();
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class AnimationControllerNew : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class AnimationControllerNew : MonoBehaviour
     public Animator[] animators;
     public GameObject[] stages;
     public string[] nameAnimations;
+    public int currentActiveIndex = 0;
 
     private string startIndex;
     private string endIndex;
@@ -28,29 +30,39 @@ public class AnimationControllerNew : MonoBehaviour
 
     void Start()
     {
-        // Assign the Animators and GameObjects (drag and drop in Inspector or find them via script)
-        //fold1Animator = fold1.GetComponent<Animator>();
-        //fold2Animator = fold2.GetComponent<Animator>();
 
-        stage1.SetActive(true);
-        stage2.SetActive(false);  // Fold 2 starts inactive
+        //stage1.SetActive(true);
+        //stage2.SetActive(false);  // Fold 2 starts inactive
 
-        startIndex = RetrieveStageInfo(stage1);
-        endIndex = RetrieveStageInfo(stage2);
+        //startIndex = RetrieveStageInfo(stage1);
+        //endIndex = RetrieveStageInfo(stage2);
 
-        nameAnim1 = "FOLD" + startIndex;
-        nameAnim2 = "FOLD" + endIndex;
+        //nameAnim1 = "FOLD" + startIndex;
+        //nameAnim2 = "FOLD" + endIndex;
 
         int childCount = transform.childCount;  // Get the number of children
         stages = new GameObject[childCount];  // Create an array of that size
+        nameAnimations = new string[childCount];
+        animators = new Animator[childCount];
 
         
 
         for (int i = 0; i < childCount; i++)
         {
+            
             // Store each child in the stages array
             GameObject stage = transform.GetChild(i).gameObject;
+            if (i == 0)
+            {
+                stage.SetActive(true);
+            }
+            else
+            {
+                stage.SetActive(false);
+            }
+            string index = RetrieveStageInfo(stage);
             stages[i] = stage;
+            nameAnimations[i] = "FOLD" + index;
 
             // Assuming the first child of each stage has an Animator component
             GameObject nestedChild = stage.transform.GetChild(0).gameObject;
@@ -66,17 +78,32 @@ public class AnimationControllerNew : MonoBehaviour
 
     public void PlayFirstAnimation()
     {
-        Debug.Log("**Fold first animation");
-        //fold1Animator.SetBool("OnDemonstration", true);
-        fold1Animator.Play(nameAnim1, 0, 0f);
+        Debug.Log($"**Fold first animation {nameAnimations[0]}");
+        // fold1Animator.Play(nameAnim1, 0, 0f);
+
+        animators[0].Play(nameAnimations[0], 0, 0f);
+        currentActiveIndex = 0;
     }
     public void TransitionToNextStage()
     {
-        stage1.SetActive(false);
-        stage2.SetActive(true);
-        Debug.Log("**Transition to next");
-        //fold2Animator.SetBool("OnDemonstration", true);
-        fold2Animator.Play(nameAnim2, 0, 0f);
+        if (currentActiveIndex < stages.Length - 1)
+        {
+            stages[currentActiveIndex].SetActive(false);
+            stages[currentActiveIndex + 1].SetActive(true);
+            currentActiveIndex++;
+            Debug.Log($"**Transition to next {nameAnimations[currentActiveIndex]}");
+            animators[currentActiveIndex].Play(nameAnimations[currentActiveIndex], 0, 0f);
+        }
+        else
+        {
+            Debug.Log("##Last Animation of this milestone. No more to play");
+        }
+
+        //stage1.SetActive(false);
+        //stage2.SetActive(true);
+        //Debug.Log("**Transition to next");
+        ////fold2Animator.SetBool("OnDemonstration", true);
+        //fold2Animator.Play(nameAnim2, 0, 0f);
     }
 
     public void ResetAnimation()
@@ -85,22 +112,27 @@ public class AnimationControllerNew : MonoBehaviour
         // Before rebind, enter the folding state.
         // If rebinding in idle state will not revert object to initial unfolded state
 
+        stages[0].SetActive(true);
+        animators[0].Play(nameAnimations[0], 0, 0f);
 
-        stage1.SetActive(true);
-        fold1Animator.Play(nameAnim1, 0, 0f);
+
+        //stage1.SetActive(true);
+        //fold1Animator.Play(nameAnim1, 0, 0f);
 
         StartCoroutine(DelayRebindWithDeactivate());
 
-       
-        //fold1Animator.Rebind();
-        //fold1Animator.Update(0); // Forces the animator to apply the new state immediately
-
         // stage 2 doesn't have to be reset because it will be hided
         // the next time hover is on, it will play the animation, and second animation will automatically be played from beginning when first animation finishes
-        fold2Animator.Rebind();
-        fold2Animator.Update(0);
-        stage1.SetActive(true);
-        stage2.SetActive(false);
+        for (int i = 1; i < stages.Length; i++)
+        {
+            animators[i].Rebind();
+            animators[i].Update(0);
+            stages[i].SetActive(false);
+        }
+        //fold2Animator.Rebind();
+        //fold2Animator.Update(0);
+        //stage1.SetActive(true);
+        //stage2.SetActive(false);
         
     }
 
@@ -110,13 +142,18 @@ public class AnimationControllerNew : MonoBehaviour
         yield return null;
 
         // Forcefully reset fold1 by temporarily deactivating it
-        stage1.SetActive(false); // Disable stage1 to reset its state
+        stages[0].SetActive(false);
+        //stage1.SetActive(false); // Disable stage1 to reset its state
         yield return null;  // Wait one more frame to ensure the deactivation happens
 
         // Re-enable and reset the animator
-        stage1.SetActive(true);
-        fold1Animator.Rebind();  // Reset the animator to its default state
-        fold1Animator.Update(0);
+        stages[0].SetActive(true);
+        animators[0].Rebind();
+        animators[0].Update(0);
+
+        //stage1.SetActive(true);
+        //fold1Animator.Rebind();  // Reset the animator to its default state
+        //fold1Animator.Update(0);
 
         Debug.Log("Animator has been successfully reset.");
     }
