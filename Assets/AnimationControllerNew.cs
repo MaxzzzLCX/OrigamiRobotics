@@ -10,17 +10,21 @@ public class AnimationControllerNew : MonoBehaviour
     public GameObject stage1;
     public GameObject stage2;
 
+    public Animator[] animators;
+    public GameObject[] stages;
+    public string[] nameAnimations;
+
     private string startIndex;
     private string endIndex;
     private string nameAnim1;
     private string nameAnim2;
 
-    private Vector3 initialPosition1;
-    private Quaternion initialRotation1;
-    private Vector3 initialScale1;
-    private Vector3 initialPosition2;
-    private Quaternion initialRotation2;
-    private Vector3 initialScale2;
+    //private Vector3 initialPosition1;
+    //private Quaternion initialRotation1;
+    //private Vector3 initialScale1;
+    //private Vector3 initialPosition2;
+    //private Quaternion initialRotation2;
+    //private Vector3 initialScale2;
 
     void Start()
     {
@@ -36,6 +40,27 @@ public class AnimationControllerNew : MonoBehaviour
 
         nameAnim1 = "FOLD" + startIndex;
         nameAnim2 = "FOLD" + endIndex;
+
+        int childCount = transform.childCount;  // Get the number of children
+        stages = new GameObject[childCount];  // Create an array of that size
+
+        
+
+        for (int i = 0; i < childCount; i++)
+        {
+            // Store each child in the stages array
+            GameObject stage = transform.GetChild(i).gameObject;
+            stages[i] = stage;
+
+            // Assuming the first child of each stage has an Animator component
+            GameObject nestedChild = stage.transform.GetChild(0).gameObject;
+
+            // Get the Animator component and store it in the animators array
+            Animator animator = nestedChild.GetComponent<Animator>();
+            animators[i] = animator;
+
+        }
+
 
     }
 
