@@ -13,7 +13,7 @@ public class FoldingManager : MonoBehaviour
     public Vector3 initialPosition;
     public Vector3 finalPosition;
     public LineRenderer foldLineRenderer;
-    public float lineLength = 2.0f;
+    public float lineLength = 5.0f;
 
 
     public GameObject paper;  // Paper GameObject with a Mesh
@@ -26,6 +26,10 @@ public class FoldingManager : MonoBehaviour
     private Vector3[] lowerVertices;
 
     public GameObject newObject;
+
+    public HashSet<int[]> uniqueEdges;
+    public List<Vector3> uniqueVertices;
+    public Vector3[] foldlinePoints;
 
     void Start()
     {
@@ -50,8 +54,9 @@ public class FoldingManager : MonoBehaviour
         if (isCornerSelected)
         {
             finalPosition = cornerNode.transform.position;
-            Vector3[] keypoints = TrackKeyPoints();
-            DrawFoldLine(keypoints[2], keypoints[3]);
+            foldlinePoints = TrackKeyPoints();
+            //Vector3[] keypoints = TrackKeyPoints();
+            DrawFoldLine(foldlinePoints[2], foldlinePoints[3]);
         }
     }
 
@@ -91,7 +96,8 @@ public class FoldingManager : MonoBehaviour
         CreateNewObjectFromCurrentObject(paperVertices, paperTriangles);
         Debug.Log("FINISH CREATING OBJECT");
 
-        CalculateIntersections();
+        ExtractEdgeOfOriginalPaper();
+        CalculateIntersectionPoints();
     }
 
     private Vector3[] TrackKeyPoints()
@@ -314,96 +320,222 @@ public class FoldingManager : MonoBehaviour
         */
     }
 
-    public void CalculateIntersection()
+   
+    private void ExtractEdgeOfOriginalPaper()
     {
-        Vector3[] localVertices = paper.GetComponent<MeshFilter>().mesh.vertices;
-
-        Vector3[] worldVertices = new Vector3[localVertices.Length];
-        for (int i = 0; i < localVertices.Length; i++)
-        {
-            worldVertices[i] = paper.transform.TransformPoint(localVertices[i]);
-            Debug.Log($"{i}: worldVertices[i]");
-        }
-
-        
-
-    }
-    // TODO: because this comment, everything is not yet tested and 100% complete. It was still under development
-    private void CalculateIntersections()
-    {
-        // Get mesh and vertices
-        Mesh mesh = paper.GetComponent<MeshFilter>().mesh;
+        Mesh mesh = meshFilter.mesh;
         Vector3[] vertices = mesh.vertices;
         int[] triangles = mesh.triangles;
 
-        // Convert vertices to world space
-        Vector3[] worldVertices = new Vector3[vertices.Length];
+        // Create a vertex-to-index map
+        Dictionary<Vector3, int> vertexToIndexMap = new Dictionary<Vector3, int>();
+        uniqueVertices = new List<Vector3>();
+        int[] updatedTriangles = new int[triangles.Length];
+
+        // Create unique vertex map and update triangle indices
         for (int i = 0; i < vertices.Length; i++)
         {
-            worldVertices[i] = paper.transform.TransformPoint(vertices[i]);
+            Vector3 vertex = vertices[i];
+            if (!vertexToIndexMap.ContainsKey(vertex))
+            {
+                int newIndex = uniqueVertices.Count;
+                uniqueVertices.Add(vertex);
+                vertexToIndexMap[vertex] = newIndex;
+            }
         }
 
-        // Use a dictionary to store unique edges
-        HashSet<Edge> edges = new HashSet<Edge>(new EdgeComparer());
-
-        for (int i = 0; i < triangles.Length; i += 3)
+        // Update triangle indices to point to unique vertex indices
+        for (int i = 0; i < triangles.Length; i++)
         {
-            // Each triangle is defined by three vertices (i, i+1, i+2)
-            Vector3 p1 = worldVertices[triangles[i]];
-            Vector3 p2 = worldVertices[triangles[i + 1]];
-            Vector3 p3 = worldVertices[triangles[i + 2]];
-
-            // Add edges (p1-p2), (p2-p3), (p3-p1)
-            edges.Add(new Edge(p1, p2));
-            edges.Add(new Edge(p2, p3));
-            edges.Add(new Edge(p3, p1));
+            Vector3 vertex = vertices[triangles[i]];
+            updatedTriangles[i] = vertexToIndexMap[vertex];
         }
 
-        // Log the number of unique edges
-        Debug.Log($"Triangles: {triangles.Length}");
-        Debug.Log($"Vertices: {vertices.Length}");
-        Debug.Log($"Unique edges: {edges.Count}");
-        foreach (Edge edge in edges)
+        // Use a HashSet to avoid duplicate edges
+        uniqueEdges = new HashSet<int[]>(new EdgeComparer());
+
+        // Construct edges based on updated triangle array and discard the longest side
+        for (int i = 0; i < updatedTriangles.Length; i += 3)
         {
-            Debug.Log($"Edge from {edge.p1} to {edge.p2}");
+            int v1 = updatedTriangles[i];
+            int v2 = updatedTriangles[i + 1];
+            int v3 = updatedTriangles[i + 2];
+
+            Vector3 p1 = uniqueVertices[v1];
+            Vector3 p2 = uniqueVertices[v2];
+            Vector3 p3 = uniqueVertices[v3];
+
+            // Calculate the lengths of the edges
+            float length1 = Vector3.Distance(p1, p2);
+            float length2 = Vector3.Distance(p2, p3);
+            float length3 = Vector3.Distance(p3, p1);
+
+            // Identify the longest side
+            float maxLength = Mathf.Max(length1, length2, length3);
+
+            // Add only the two shortest edges to the HashSet
+            if (maxLength != length1)
+            {
+                uniqueEdges.Add(new int[] { v1, v2 });
+            }
+            if (maxLength != length2)
+            {
+                uniqueEdges.Add(new int[] { v2, v3 });
+            }
+            if (maxLength != length3)
+            {
+                uniqueEdges.Add(new int[] { v3, v1 });
+            }
+        }
+
+        // Print unique edges
+        string uniqueEdgeList = "Unique Edges: ";
+        foreach (int[] edge in uniqueEdges)
+        {
+            Vector3 p1 = uniqueVertices[edge[0]];
+            Vector3 p2 = uniqueVertices[edge[1]];
+            uniqueEdgeList += $"({p1.x}, {p1.y}, {p1.z}) to ({p2.x}, {p2.y}, {p2.z}), ";
+        }
+        Debug.Log(uniqueEdgeList);
+
+        // Output the counts
+        Debug.Log($"Vertex Count: {uniqueVertices.Count}");
+        Debug.Log($"Triangle Count: {updatedTriangles.Length / 3}");
+        Debug.Log($"Unique Edge Count: {uniqueEdges.Count}");
+    }
+
+    // Find the intersection points. Group the points into two new sets of vertices
+    // Form two new game objects based on these vertices and triangles
+
+    // Finds the intersection point
+    private bool FindLineIntersection(Vector3 line1Start, Vector3 line1End, Vector3 line2Start, Vector3 line2End, out Vector3 intersection)
+    {
+        intersection = Vector3.zero;
+
+        // Line1 direction
+        Vector3 line1Dir = line1End - line1Start;
+        Vector3 line2Dir = line2End - line2Start;
+
+        Vector3 crossProduct = Vector3.Cross(line1Dir, line2Dir);
+
+        // Check if lines are parallel (cross product is zero)
+        if (crossProduct.magnitude < 0.0001f)
+        {
+            return false;
+        }
+
+        // Find the intersection point
+        Vector3 diff = line2Start - line1Start;
+        float t = Vector3.Dot(Vector3.Cross(diff, line2Dir), crossProduct) / crossProduct.magnitude;
+
+        if (t >= 0 && t <= 1)
+        {
+            intersection = line1Start + t * line1Dir;
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool FindLineIntersection2D(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, out Vector3 intersection)
+    {
+        // Initialize the output intersection point
+        intersection = Vector3.zero;
+
+        // Convert the points to 2D (XY plane)
+        Vector2 A = new Vector2(p1.x, p1.y);
+        Vector2 B = new Vector2(p2.x, p2.y);
+        Vector2 C = new Vector2(p3.x, p3.y);
+        Vector2 D = new Vector2(p4.x, p4.y);
+
+        // Calculate the denominator
+        float denominator = (B.x - A.x) * (D.y - C.y) - (B.y - A.y) * (D.x - C.x);
+
+        // Check if lines are parallel (denominator is zero)
+        if (Mathf.Abs(denominator) < Mathf.Epsilon)
+        {
+            return false; // Lines are parallel or coincident
+        }
+
+        // Calculate the numerators for the line intersection equations
+        float tNumerator = (A.x - C.x) * (D.y - C.y) - (A.y - C.y) * (D.x - C.x);
+        float uNumerator = (A.x - C.x) * (B.y - A.y) - (A.y - C.y) * (B.x - A.x);
+
+        // Calculate the intersection points t and u
+        float t = tNumerator / denominator;
+        float u = uNumerator / denominator;
+
+        // If t and u are between 0 and 1, the intersection is within both line segments
+        if (t >= 0 && t <= 1 && u >= 0 && u <= 1)
+        {
+            // Calculate the intersection point
+            intersection = new Vector3(A.x + t * (B.x - A.x), A.y + t * (B.y - A.y), p1.z); // Keep z-coordinate constant
+            return true; // Lines intersect
+        }
+
+        return false; // No valid intersection within the line segments
+    }
+
+
+    private void CalculateIntersectionPoints()
+    {
+        List<Vector3> intersections = new List<Vector3>();
+        Debug.Log($"Number of unique edges is {uniqueEdges.Count}");
+        int i = 1;
+
+        foreach (int[] paperEdge in uniqueEdges)
+        {
+            //Vector3 edgeVertex1 = uniqueVertices[paperEdge[0]];
+            //Vector3 edgeVertex2 = uniqueVertices[paperEdge[1]];
+            Vector3 edgeVertex1 = paper.transform.TransformPoint(uniqueVertices[paperEdge[0]]);
+            Vector3 edgeVertex2 = paper.transform.TransformPoint(uniqueVertices[paperEdge[1]]);
+            Vector3 foldPoint1 = foldlinePoints[2];
+            Vector3 foldPoint2 = foldlinePoints[3];
+
+
+            Debug.Log($"EDGE {i}: ({edgeVertex1.x},{edgeVertex1.y}) to ({edgeVertex2.x},{edgeVertex2.y}); FOLDAXIS x,y coordinates: ({foldPoint1.x},{foldPoint1.y}) to ({foldPoint2.x},{foldPoint2.y})");
+
+            // Only have to check intersection when the edge is a horizontal edge
+            // Any vertical edge will not be cut by the fold
+
+            if (edgeVertex1.z == edgeVertex2.z) {
+                
+                foldPoint1.z = edgeVertex1.z;
+                foldPoint2.z = edgeVertex1.z;
+
+                Vector3 intersectionPoint1;
+
+                if (FindLineIntersection2D(edgeVertex1, edgeVertex2, foldPoint1, foldPoint2, out intersectionPoint1))
+                {
+                    intersections.Add(intersectionPoint1);
+                    Debug.Log($"intersection {i} at {intersectionPoint1}");
+                }
+            }
+
+            i++;
+
+
         }
     }
+
+
+    
 
     // Helper class to represent an edge
-    class Edge
-    {
-        public Vector3 p1, p2;
 
-        public Edge(Vector3 p1, Vector3 p2)
-        {
-            // Ensure the vertices are always stored in the same order (for comparison)
-            if (p1.sqrMagnitude < p2.sqrMagnitude)
-            {
-                this.p1 = p1;
-                this.p2 = p2;
-            }
-            else
-            {
-                this.p1 = p2;
-                this.p2 = p1;
-            }
-        }
-    }
 
     // Custom comparer to ensure edges are treated as duplicates if they share the same vertices
-    class EdgeComparer : IEqualityComparer<Edge>
+    private class EdgeComparer : IEqualityComparer<int[]>
     {
-        public bool Equals(Edge edge1, Edge edge2)
+        public bool Equals(int[] edge1, int[] edge2)
         {
-            // Consider edges equal if they have the same two vertices (in any order)
-            return (Vector3.Distance(edge1.p1, edge2.p1) < 0.0001f && Vector3.Distance(edge1.p2, edge2.p2) < 0.0001f) ||
-                   (Vector3.Distance(edge1.p1, edge2.p2) < 0.0001f && Vector3.Distance(edge1.p2, edge2.p1) < 0.0001f);
+            return (edge1[0] == edge2[0] && edge1[1] == edge2[1]) ||
+                   (edge1[0] == edge2[1] && edge1[1] == edge2[0]);
         }
 
-        public int GetHashCode(Edge edge)
+        public int GetHashCode(int[] edge)
         {
-            // Combine the hash codes of the two vertices to get a unique hash for the edge
-            return edge.p1.GetHashCode() ^ edge.p2.GetHashCode();
+            return edge[0].GetHashCode() ^ edge[1].GetHashCode();
         }
     }
 
