@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Linq;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 public class FoldingManager : MonoBehaviour
 {
@@ -97,7 +99,12 @@ public class FoldingManager : MonoBehaviour
         Debug.Log("FINISH CREATING OBJECT");
 
         ExtractEdgeOfOriginalPaper();
-        CalculateIntersectionPoints();
+        List<Vector3> intersections = CalculateIntersectionPoints();
+
+        List<Vector3> groupA = new List<Vector3>();
+        List<Vector3> groupB = new List<Vector3>();
+        SegmentPaperByFold(uniqueVertices,keypoints[2], keypoints[3], out groupA, out groupB);
+
     }
 
     private Vector3[] TrackKeyPoints()
@@ -116,12 +123,12 @@ public class FoldingManager : MonoBehaviour
         Vector3 linepoint1 = midpoint + foldAxis * lineLength;
         Vector3 linepoint2 = midpoint - foldAxis * lineLength;
 
-        Debug.Log($"initial {initialPosition}, final {finalPosition}");
-        Debug.Log($"midpoint {midpoint}, Frist point {linepoint1}, Second point {linepoint2}");
+        //Debug.Log($"initial {initialPosition}, final {finalPosition}");
+        //Debug.Log($"midpoint {midpoint}, Frist point {linepoint1}, Second point {linepoint2}");
 
         linepoint1.z = midpoint.z;
         linepoint2.z = midpoint.z;
-        Debug.Log($"change point1 to {linepoint1} and point 2 to {linepoint2}");
+        //Debug.Log($"change point1 to {linepoint1} and point 2 to {linepoint2}");
 
         return new Vector3[] { initialPosition, finalPosition, linepoint1, linepoint2 };
 
@@ -408,77 +415,52 @@ public class FoldingManager : MonoBehaviour
     // Form two new game objects based on these vertices and triangles
 
     // Finds the intersection point
-    private bool FindLineIntersection(Vector3 line1Start, Vector3 line1End, Vector3 line2Start, Vector3 line2End, out Vector3 intersection)
+
+   
+
+
+    private List<Vector3> CalculateIntersectionPoints()
     {
-        intersection = Vector3.zero;
-
-        // Line1 direction
-        Vector3 line1Dir = line1End - line1Start;
-        Vector3 line2Dir = line2End - line2Start;
-
-        Vector3 crossProduct = Vector3.Cross(line1Dir, line2Dir);
-
-        // Check if lines are parallel (cross product is zero)
-        if (crossProduct.magnitude < 0.0001f)
+        // Function that determines whether two segments intersect
+        bool FindLineIntersection2D(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, out Vector3 intersection)
         {
-            return false;
+            // Initialize the output intersection point
+            intersection = Vector3.zero;
+
+            // Convert the points to 2D (XY plane)
+            Vector2 A = new Vector2(p1.x, p1.y);
+            Vector2 B = new Vector2(p2.x, p2.y);
+            Vector2 C = new Vector2(p3.x, p3.y);
+            Vector2 D = new Vector2(p4.x, p4.y);
+
+            // Calculate the denominator
+            float denominator = (B.x - A.x) * (D.y - C.y) - (B.y - A.y) * (D.x - C.x);
+
+            // Check if lines are parallel (denominator is zero)
+            if (Mathf.Abs(denominator) < Mathf.Epsilon)
+            {
+                return false; // Lines are parallel or coincident
+            }
+
+            // Calculate the numerators for the line intersection equations
+            float tNumerator = (C.x - A.x) * (D.y - C.y) - (C.y - A.y) * (D.x - C.x);
+            float uNumerator = (C.x - A.x) * (B.y - A.y) - (C.y - A.y) * (B.x - A.x);
+
+            // Calculate the intersection points t and u
+            float t = tNumerator / denominator;
+            float u = uNumerator / denominator;
+
+            // If t and u are between 0 and 1, the intersection is within both line segments
+            if (t >= 0 && t <= 1 && u >= 0 && u <= 1)
+            {
+                // Calculate the intersection point
+                intersection = new Vector3(A.x + t * (B.x - A.x), A.y + t * (B.y - A.y), p1.z); // Keep z-coordinate constant
+                return true; // Lines intersect
+            }
+
+            return false; // No valid intersection within the line segments
         }
 
-        // Find the intersection point
-        Vector3 diff = line2Start - line1Start;
-        float t = Vector3.Dot(Vector3.Cross(diff, line2Dir), crossProduct) / crossProduct.magnitude;
-
-        if (t >= 0 && t <= 1)
-        {
-            intersection = line1Start + t * line1Dir;
-            return true;
-        }
-
-        return false;
-    }
-
-    private bool FindLineIntersection2D(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, out Vector3 intersection)
-    {
-        // Initialize the output intersection point
-        intersection = Vector3.zero;
-
-        // Convert the points to 2D (XY plane)
-        Vector2 A = new Vector2(p1.x, p1.y);
-        Vector2 B = new Vector2(p2.x, p2.y);
-        Vector2 C = new Vector2(p3.x, p3.y);
-        Vector2 D = new Vector2(p4.x, p4.y);
-
-        // Calculate the denominator
-        float denominator = (B.x - A.x) * (D.y - C.y) - (B.y - A.y) * (D.x - C.x);
-
-        // Check if lines are parallel (denominator is zero)
-        if (Mathf.Abs(denominator) < Mathf.Epsilon)
-        {
-            return false; // Lines are parallel or coincident
-        }
-
-        // Calculate the numerators for the line intersection equations
-        float tNumerator = (A.x - C.x) * (D.y - C.y) - (A.y - C.y) * (D.x - C.x);
-        float uNumerator = (A.x - C.x) * (B.y - A.y) - (A.y - C.y) * (B.x - A.x);
-
-        // Calculate the intersection points t and u
-        float t = tNumerator / denominator;
-        float u = uNumerator / denominator;
-
-        // If t and u are between 0 and 1, the intersection is within both line segments
-        if (t >= 0 && t <= 1 && u >= 0 && u <= 1)
-        {
-            // Calculate the intersection point
-            intersection = new Vector3(A.x + t * (B.x - A.x), A.y + t * (B.y - A.y), p1.z); // Keep z-coordinate constant
-            return true; // Lines intersect
-        }
-
-        return false; // No valid intersection within the line segments
-    }
-
-
-    private void CalculateIntersectionPoints()
-    {
         List<Vector3> intersections = new List<Vector3>();
         Debug.Log($"Number of unique edges is {uniqueEdges.Count}");
         int i = 1;
@@ -493,7 +475,7 @@ public class FoldingManager : MonoBehaviour
             Vector3 foldPoint2 = foldlinePoints[3];
 
 
-            Debug.Log($"EDGE {i}: ({edgeVertex1.x},{edgeVertex1.y}) to ({edgeVertex2.x},{edgeVertex2.y}); FOLDAXIS x,y coordinates: ({foldPoint1.x},{foldPoint1.y}) to ({foldPoint2.x},{foldPoint2.y})");
+            // Debug.Log($"EDGE {i}: ({edgeVertex1.x},{edgeVertex1.y}) to ({edgeVertex2.x},{edgeVertex2.y}); FOLDAXIS x,y coordinates: ({foldPoint1.x},{foldPoint1.y}) to ({foldPoint2.x},{foldPoint2.y})");
 
             // Only have to check intersection when the edge is a horizontal edge
             // Any vertical edge will not be cut by the fold
@@ -511,17 +493,65 @@ public class FoldingManager : MonoBehaviour
                     Debug.Log($"intersection {i} at {intersectionPoint1}");
                 }
             }
-
             i++;
+        }
+        return intersections;
+    }
+    
+    private void SegmentPaperByFold(List<Vector3> originalVertices, Vector3 foldP1, Vector3 foldP2, out List<Vector3> groupA, out List<Vector3> groupB)
+    {
+        //(1) Group the vertices (including new intersection vertices) into two subgroups
+        //(2) For each of these subgroups, take in the group of vertices and create a game object
 
+        void SplitVertices(List<Vector3> originalVertices, Vector3 foldP1, Vector3 foldP2, out List<Vector3> groupA, out List<Vector3> groupB)
+        {
+            groupA = new List<Vector3>();
+            groupB = new List<Vector3>();
+
+            Vector2 foldAxis = new Vector2(foldP2.x - foldP1.x, foldP2.y - foldP1.y);
+
+            foreach (Vector3 vertex in originalVertices)
+            {
+                Vector2 vertexVector = new Vector2(vertex.x - foldP1.x, vertex.y - foldP1.y);
+                float crossProduct = foldAxis.x * vertexVector.y - foldAxis.y * vertexVector.x;
+
+                if (Mathf.Abs(crossProduct) < 1e-6f)
+                {
+                    // Vertex lies on the fold axis
+                    // Decide how to handle this case
+                    Debug.Log("Too Small");
+                }
+                else if (crossProduct > 0)
+                {
+                    groupA.Add(vertex);
+                    Debug.Log($"A: {vertex}");
+                }
+                else
+                {
+                    groupB.Add(vertex);
+                    Debug.Log($"B: {vertex}");
+                }
+            }
+        }
+        
+        void GenerateNewPaper(List<List<Vector3>> newVertices)
+        {
+            foreach(List<Vector3> verticesgroups in newVertices)
+            {
+                
+            }
+        }
+        
+        void NewGameObject(List<Vector3> vertices)
+        {
 
         }
+
+        SplitVertices(originalVertices, foldP1, foldP2, out groupA, out groupB);
+        
+        
     }
-
-
     
-
-    // Helper class to represent an edge
 
 
     // Custom comparer to ensure edges are treated as duplicates if they share the same vertices
@@ -612,5 +642,54 @@ public class FoldingManager : MonoBehaviour
     }
 
     */
+    /*
+    private void TestIntersection()
+    {
+        List<Vector3> intersections = new List<Vector3>();
+        
+        int i = 1;
+
+        // (0.05167454,0.5048455) to (0.05167454,1.455155); FOLDAXIS x,y coordinates: (0.3168258,0.4046873) to (-0.9143568,1.980818)
+        List<Vector3[]> testCases = new List<Vector3[]>();
+        Vector3[] somecase = new Vector3[] { new Vector3(0.05167454f, 0.5048455f, 1.0f), new Vector3(0.05167454f, 1.455155f, 1.0f), new Vector3(0.3168258f, 0.4046873f, 1.0f), new Vector3(-0.9143568f, 1.980818f, 1.0f) };
+        testCases.Add(somecase);
+
+        foreach (Vector3[] acase in testCases)
+        {
+            //Vector3 edgeVertex1 = uniqueVertices[paperEdge[0]];
+            //Vector3 edgeVertex2 = uniqueVertices[paperEdge[1]];
+            Vector3 edgeVertex1 = acase[0];
+            Vector3 edgeVertex2 = acase[1];
+            Vector3 foldPoint1 = acase[2];
+            Vector3 foldPoint2 = acase[3];
+
+
+            Debug.Log($"EDGE {i}: ({edgeVertex1.x},{edgeVertex1.y}) to ({edgeVertex2.x},{edgeVertex2.y}); FOLDAXIS x,y coordinates: ({foldPoint1.x},{foldPoint1.y}) to ({foldPoint2.x},{foldPoint2.y})");
+
+            // Only have to check intersection when the edge is a horizontal edge
+            // Any vertical edge will not be cut by the fold
+
+            if (edgeVertex1.z == edgeVertex2.z)
+            {
+
+                foldPoint1.z = edgeVertex1.z;
+                foldPoint2.z = edgeVertex1.z;
+
+                Vector3 intersectionPoint1;
+
+                if (FindLineIntersection2D(edgeVertex1, edgeVertex2, foldPoint1, foldPoint2, out intersectionPoint1))
+                {
+                    intersections.Add(intersectionPoint1);
+                    Debug.Log($"intersection {i} at {intersectionPoint1}");
+                }
+            }
+
+            i++;
+
+
+        }
+    }
+    */
+
 
 }
