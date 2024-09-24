@@ -6,13 +6,14 @@ using EzySlice;
 public class SlicingScript : MonoBehaviour
 {
     // Start is called before the first frame update
+    public SlicingManager slicingManager;
 
     public Material crossSectionMaterial;
 
 
     void Start()
     {
-        
+        slicingManager = gameObject.transform.parent.GetComponent<SlicingManager>();
     }
 
     // Update is called once per frame
@@ -43,18 +44,32 @@ public class SlicingScript : MonoBehaviour
             upperHull.transform.localScale = transform.localScale;
             lowerHull.transform.localScale = transform.localScale;
 
+            upperHull.AddComponent<PaperSegment>();
+            lowerHull.AddComponent<PaperSegment>();
+            upperHull.AddComponent<SlicingScript>();
+            lowerHull.AddComponent<SlicingScript>();
+
             
 
 
-            float foldingAngle = -180f; // The angle to fold, adjust as needed
-            float animationDuration = 5f; // Duration of the folding animation
+            // Optionally, start the animation
+            lowerHull.GetComponent<PaperSegment>().FoldingAnimation(midpoint, foldAxis);
 
-            StartCoroutine(AnimateFold(lowerHull, midpoint, foldAxis, foldingAngle, animationDuration));
+            slicingManager.allPaperSegments.Add(upperHull);
+            slicingManager.allPaperSegments.Add(lowerHull);
+            slicingManager.allPaperSegments.Remove(gameObject);
+
+
+            //float foldingAngle = -180f; // The angle to fold, adjust as needed
+            //float animationDuration = 5f; // Duration of the folding animation
+
+            //StartCoroutine(AnimateFold(lowerHull, midpoint, foldAxis, foldingAngle, animationDuration));
 
             // Destroy the original object
-            //gameObject.SetActive(false);
+            gameObject.SetActive(false);
             // Destroy(gameObject);
 
+            
 
 
         }

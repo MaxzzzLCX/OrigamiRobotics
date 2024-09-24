@@ -32,8 +32,12 @@ public class SlicingManager : MonoBehaviour
 
     public Material crossSectionMaterial;
 
+    public List<GameObject> allPaperSegments = new List<GameObject>();
+
     void Start()
     {
+        allPaperSegments.Add(paper);
+
         // Ensure the LineRenderer is configured
         if (foldLineRenderer != null)
         {
@@ -90,7 +94,16 @@ public class SlicingManager : MonoBehaviour
         DrawFoldLine(keypoints[2], keypoints[3]);
         Debug.Log("Finish Drawing Line)");
 
-        paper.GetComponent<SlicingScript>().SegmentPaper(keypoints[2], keypoints[3], keypoints[4]);
+        List<GameObject> paperSegmentsCopy = new List<GameObject>(allPaperSegments);
+
+        // Keep a list of gameobject of the current gameobject.
+        // TODO: the folding direction is easy to determine, but need to dynamically determine the height of the folding point
+        // - It should be the uppermost layer that is influenced by the foldaxis
+        foreach (GameObject paperSegment in paperSegmentsCopy)
+        {
+            paperSegment.GetComponent<SlicingScript>().SegmentPaper(keypoints[2], keypoints[3], keypoints[4]);
+        }
+        //paper.GetComponent<SlicingScript>().SegmentPaper(keypoints[2], keypoints[3], keypoints[4]);
         Debug.Log("Segment Finish");
 
     }
