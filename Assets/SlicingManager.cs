@@ -2,6 +2,7 @@ using EzySlice;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Xml.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -33,6 +34,9 @@ public class SlicingManager : MonoBehaviour
     public Material crossSectionMaterial;
 
     public List<GameObject> allPaperSegments = new List<GameObject>();
+    public List<GameObject> animatingPaperSegments = new List<GameObject>();
+    public float foldAxisZ;
+    public int numOfPlanesToSlice = 0;
 
     void Start()
     {
@@ -97,14 +101,62 @@ public class SlicingManager : MonoBehaviour
         List<GameObject> paperSegmentsCopy = new List<GameObject>(allPaperSegments);
 
         // Keep a list of gameobject of the current gameobject.
-        // TODO: the folding direction is easy to determine, but need to dynamically determine the height of the folding point
-        // - It should be the uppermost layer that is influenced by the foldaxis
+        // [DONE] TODO: the folding direction is easy to determine, but need to dynamically determine the height of the folding point
+        // - It should be the uppermost layer (minimum z) that determines the foldaxis
+
+        
+        foldAxisZ = 5; // reset foldAxisZ to a very large value
+        numOfPlanesToSlice = 0;
+
         foreach (GameObject paperSegment in paperSegmentsCopy)
-        {
+        {  
             paperSegment.GetComponent<SlicingScript>().SegmentPaper(keypoints[2], keypoints[3], keypoints[4]);
+            // In this procedure, all paper segments under the fold will be traversed. The minimum z value will be recorded and used in animation
+            
         }
         //paper.GetComponent<SlicingScript>().SegmentPaper(keypoints[2], keypoints[3], keypoints[4]);
         Debug.Log("Segment Finish");
+
+
+        // TODO: After traversing all planes and identifying those influenced by the fold, if there is zero planes, then maybe flip entire paper
+        if (numOfPlanesToSlice == 0)
+        {
+            // Add all planes into the animation planes list, and while traverse find the minimum z
+            foreach(GameObject paperSegment in paperSegmentsCopy)
+            {
+                animatingPaperSegments.Add(paperSegment);
+
+                foreach(Vector3 vertex in paperSegment.GetComponent<MeshFilter>().mesh.vertices){
+                    Vector3 global = paperSegment.transform.TransformPoint(vertex);
+                    if (global.z < foldAxisZ)
+                    {
+                        foldAxisZ = global.z;
+                    }
+                }
+
+            }
+        }
+
+
+
+
+
+
+        Vector3 foldAxis = keypoints[2] - keypoints[3]; //difference of foldp1 and foldp2
+        Vector3 foldPoint = keypoints[4]; //midpoint
+        foldPoint.z = foldAxisZ; //change z coordinate of midpoint to the minimum z of all vertices of all segments under fold line
+
+        Debug.Log($"Animation around point {foldPoint} and direction {foldAxis}");
+        Debug.Log($"Number of planes to animate si {animatingPaperSegments.Count}");
+        // TODO: if have more than one layers, fold the first layer, then ask the user if you want to fold another layer? perhaps via a button. Now system can only fold everything together
+
+        foreach(GameObject animatingPaperSegment in animatingPaperSegments)
+        {
+            animatingPaperSegment.GetComponent<PaperSegment>().FoldingAnimation(foldPoint, foldAxis);
+        }
+        Debug.Log("Animation Finish");
+
+        animatingPaperSegments.Clear();
 
     }
 

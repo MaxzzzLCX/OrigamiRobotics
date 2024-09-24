@@ -21,6 +21,22 @@ public class SlicingScript : MonoBehaviour
     {
         
     }
+    public bool IsUnderFold(Vector3 point1, Vector3 point2, Vector3 midpoint)
+    {
+        Vector3 foldAxis = point1 - point2;
+        Vector3 planeNormal = Vector3.Cross(foldAxis, new Vector3(0f, 0f, 1f)).normalized;
+        Vector3 planePosition = midpoint; // A point on the fold axis
+        SlicedHull slicedObject = gameObject.Slice(planePosition, planeNormal, crossSectionMaterial);
+
+        if (slicedObject != null )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     public void SegmentPaper(Vector3 point1, Vector3 point2, Vector3 midpoint)
     {
@@ -32,6 +48,19 @@ public class SlicingScript : MonoBehaviour
 
         if (slicedObject != null)
         {
+            // If under the fold axis, find the minimum z (the height of the axis)
+            foreach (Vector3 vertex in gameObject.GetComponent<MeshFilter>().mesh.vertices)
+            {
+                Vector3 global = gameObject.transform.TransformPoint(vertex);
+                if (global.z < slicingManager.foldAxisZ)
+                {
+                    slicingManager.foldAxisZ = global.z;
+                    Debug.Log($"Fold Axis z updated to {global.z}");
+                }
+            }
+
+            slicingManager.numOfPlanesToSlice++; // record the number of planes influenced
+
             // Create upper and lower hulls
             GameObject upperHull = slicedObject.CreateUpperHull(gameObject, crossSectionMaterial);
             GameObject lowerHull = slicedObject.CreateLowerHull(gameObject, crossSectionMaterial);
@@ -49,21 +78,16 @@ public class SlicingScript : MonoBehaviour
             upperHull.AddComponent<SlicingScript>();
             lowerHull.AddComponent<SlicingScript>();
 
-            
+            slicingManager.animatingPaperSegments.Add(lowerHull); //Put into the list of all parts that animations will be played on
 
 
-            // Optionally, start the animation
-            lowerHull.GetComponent<PaperSegment>().FoldingAnimation(midpoint, foldAxis);
+            //// Optionally, start the animation
+            //lowerHull.GetComponent<PaperSegment>().FoldingAnimation(midpoint, foldAxis);
 
             slicingManager.allPaperSegments.Add(upperHull);
             slicingManager.allPaperSegments.Add(lowerHull);
             slicingManager.allPaperSegments.Remove(gameObject);
 
-
-            //float foldingAngle = -180f; // The angle to fold, adjust as needed
-            //float animationDuration = 5f; // Duration of the folding animation
-
-            //StartCoroutine(AnimateFold(lowerHull, midpoint, foldAxis, foldingAngle, animationDuration));
 
             // Destroy the original object
             gameObject.SetActive(false);
@@ -78,7 +102,6 @@ public class SlicingScript : MonoBehaviour
             Debug.Log("Error Slicing");
         }
     }
-
  
 
     private IEnumerator AnimateFold(GameObject foldingPart, Vector3 axisPoint, Vector3 axisDirection, float totalAngle, float duration)
