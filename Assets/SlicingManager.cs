@@ -35,8 +35,13 @@ public class SlicingManager : MonoBehaviour
 
     public List<GameObject> allPaperSegments = new List<GameObject>();
     public List<GameObject> animatingPaperSegments = new List<GameObject>();
+    public int foldLayerIndex = 0;
     public float foldAxisZ;
     public int numOfPlanesToSlice = 0;
+
+    public GameObject foldSelectionButton;
+    public Vector3 FOLDAXIS;
+    public Vector3 FOLDPOSITION;
 
     void Start()
     {
@@ -80,11 +85,29 @@ public class SlicingManager : MonoBehaviour
         }
     }
 
+    public void ConditionalSelectCorner()
+    {
+        if (cornerNode.GetComponent<NodeManager>().foldingMode)
+        {
+            SelectCorner();
+        }
+    }
+
+    public void ConditionalUnselectCorner()
+    {
+        if (cornerNode.GetComponent<NodeManager>().foldingMode)
+        {
+            UnselectCorner();
+        }
+    }
+
     public void SelectCorner()
     {
         isCornerSelected = true;
         initialPosition = cornerNode.transform.position;
         Debug.Log("Select");
+
+        foldSelectionButton.SetActive(false);
     }
 
     public void UnselectCorner()
@@ -99,6 +122,7 @@ public class SlicingManager : MonoBehaviour
         Debug.Log("Finish Drawing Line)");
 
         List<GameObject> paperSegmentsCopy = new List<GameObject>(allPaperSegments);
+        animatingPaperSegments = new List<GameObject>();
 
         // Keep a list of gameobject of the current gameobject.
         // [DONE] TODO: the folding direction is easy to determine, but need to dynamically determine the height of the folding point
@@ -108,11 +132,14 @@ public class SlicingManager : MonoBehaviour
         foldAxisZ = 5; // reset foldAxisZ to a very large value
         numOfPlanesToSlice = 0;
 
+        Vector3 foldAxis = keypoints[2] - keypoints[3]; //difference of foldp1 and foldp2
+        Vector3 foldPoint = keypoints[4]; //midpoint
+
+
         foreach (GameObject paperSegment in paperSegmentsCopy)
         {  
             paperSegment.GetComponent<SlicingScript>().SegmentPaper(keypoints[2], keypoints[3], keypoints[4]);
-            // In this procedure, all paper segments under the fold will be traversed. The minimum z value will be recorded and used in animation
-            
+            // In this procedure, all paper segments under the fold will be traversed. The minimum z value will be recorded and used in animation 
         }
         //paper.GetComponent<SlicingScript>().SegmentPaper(keypoints[2], keypoints[3], keypoints[4]);
         Debug.Log("Segment Finish");
@@ -135,30 +162,79 @@ public class SlicingManager : MonoBehaviour
                 }
 
             }
+
+            
+            foldPoint.z = foldAxisZ; //change z coordinate of midpoint to the minimum z of all vertices of all segments under fold line
+
+            foreach (GameObject animatingPaperSegment in animatingPaperSegments)
+            {
+                animatingPaperSegment.GetComponent<PaperSegment>().FoldingAnimation(foldPoint, foldAxis);
+            }
+            Debug.Log("Flipping entire paper");
+
+            animatingPaperSegments.Clear();
         }
 
-
-
-
-
-
-        Vector3 foldAxis = keypoints[2] - keypoints[3]; //difference of foldp1 and foldp2
-        Vector3 foldPoint = keypoints[4]; //midpoint
-        foldPoint.z = foldAxisZ; //change z coordinate of midpoint to the minimum z of all vertices of all segments under fold line
-
-        Debug.Log($"Animation around point {foldPoint} and direction {foldAxis}");
-        Debug.Log($"Number of planes to animate si {animatingPaperSegments.Count}");
-        // TODO: if have more than one layers, fold the first layer, then ask the user if you want to fold another layer? perhaps via a button. Now system can only fold everything together
-
-        foreach(GameObject animatingPaperSegment in animatingPaperSegments)
+        else // at least some layers to fold
         {
-            animatingPaperSegment.GetComponent<PaperSegment>().FoldingAnimation(foldPoint, foldAxis);
-        }
-        Debug.Log("Animation Finish");
+            foldAxis = keypoints[2] - keypoints[3]; //difference of foldp1 and foldp2
+            foldPoint = keypoints[4]; //midpoint
+            foldPoint.z = foldAxisZ; //change z coordinate of midpoint to the minimum z of all vertices of all segments under fold line
 
-        animatingPaperSegments.Clear();
+            FOLDAXIS = foldAxis;
+            FOLDPOSITION = foldPoint;
+
+            Debug.Log($"Animation around point {foldPoint} and direction {foldAxis}");
+            Debug.Log($"Number of planes to animate is {animatingPaperSegments.Count}");
+
+            // TODO: if have more than one layers, fold the first layer, then ask the user if you want to fold another layer? perhaps via a button. Now system can only fold everything together
+
+            // sort the animatingPaperSegments by their ordering of layers from top to bottom
+            animatingPaperSegments.Sort((a, b) => a.transform.position.z.CompareTo(b.transform.position.z));
+
+
+            foldSelectionButton.SetActive(true);
+            foldLayerIndex = 0;
+            // Then use the button to control folds. When clicked once, fold one paper. 
+
+
+
+
+
+            //foreach (GameObject animatingPaperSegment in animatingPaperSegments)
+            //{
+            //    animatingPaperSegment.GetComponent<PaperSegment>().FoldingAnimation(foldPoint, foldAxis);
+            //}
+            //Debug.Log("Animation Finish");
+
+            //animatingPaperSegments.Clear();
+        }
+
+
+
+
+        
 
     }
+
+    public void NextLayer()
+    {
+        // Triggered when the button is clicked to fold next layer
+
+        if (foldLayerIndex < animatingPaperSegments.Count)
+        {
+            animatingPaperSegments[foldLayerIndex].GetComponent<PaperSegment>().FoldingAnimation(FOLDPOSITION, FOLDAXIS);
+            Debug.Log($"Folded the #{foldLayerIndex + 1} layer out of the {animatingPaperSegments.Count} layers");
+
+            foldLayerIndex++;
+        }
+        else
+        {
+            Debug.Log("Out of range");
+            foldSelectionButton.SetActive(false);
+        }
+    }
+
 
     private Vector3[] TrackKeyPoints()
     {

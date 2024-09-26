@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class PaperSegment : MonoBehaviour
 {
+    
     // Start is called before the first frame update
     void Start()
     {

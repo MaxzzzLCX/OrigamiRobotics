@@ -5,9 +5,12 @@ using UnityEngine;
 public class NodeManager : MonoBehaviour
 {
     private Color originalColor;
-    public Color hoverColor = Color.red; // You can set this in the Inspector
+    public Color foldHoverColor = Color.red; // You can set this in the Inspector
+    public Color moveHoverColor = Color.green;
     private Renderer sphereRenderer;
     private float originalZ;
+
+    public bool foldingMode = true;
 
     // Start is called before the first frame update
     void Start()
@@ -30,10 +33,26 @@ public class NodeManager : MonoBehaviour
 
     public void OnHoverEnter()
     {
-        sphereRenderer.material.color = hoverColor;
+        if (foldingMode)
+        {
+            sphereRenderer.material.color = foldHoverColor;
+        }
+        else
+        {
+            sphereRenderer.material.color = moveHoverColor;
+        }
     }
     public void OnHoverExit()
     {
         sphereRenderer.material.color = originalColor;
+    }
+
+    public void FoldingModeActive()
+    {
+        foldingMode = true;
+    }
+    public void FoldingModeDeactivate()
+    {
+        foldingMode = false;
     }
 }
