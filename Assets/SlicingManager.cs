@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Xml.Linq;
 using UnityEditor;
+//using UnityEditor.UI;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
 
@@ -35,13 +36,22 @@ public class SlicingManager : MonoBehaviour
 
     public List<GameObject> allPaperSegments = new List<GameObject>();
     public List<GameObject> animatingPaperSegments = new List<GameObject>();
+    public List<GameObject> paperSegmentToBeFold = new List<GameObject>();
     public int foldLayerIndex = 0;
     public float foldAxisZ;
     public int numOfPlanesToSlice = 0;
 
     public GameObject foldSelectionButton;
+    public Vector3 FOLDP1;
+    public Vector3 FOLDP2;
     public Vector3 FOLDAXIS;
     public Vector3 FOLDPOSITION;
+
+    // TODO: impose physical constraints between layers by considering the edges between paper segments
+    // - Mapping between face to the edges
+    // - When folding takes place, the relationship of faces and edges are updated
+
+    public Dictionary<GameObject, Edge> PaperToConnectedPapers; //Mapping of each paper segment gameobject to all of its edges
 
     void Start()
     {
@@ -123,6 +133,7 @@ public class SlicingManager : MonoBehaviour
 
         List<GameObject> paperSegmentsCopy = new List<GameObject>(allPaperSegments);
         animatingPaperSegments = new List<GameObject>();
+        paperSegmentToBeFold = new List<GameObject>();
 
         // Keep a list of gameobject of the current gameobject.
         // [DONE] TODO: the folding direction is easy to determine, but need to dynamically determine the height of the folding point
@@ -138,11 +149,11 @@ public class SlicingManager : MonoBehaviour
 
         foreach (GameObject paperSegment in paperSegmentsCopy)
         {  
-            paperSegment.GetComponent<SlicingScript>().SegmentPaper(keypoints[2], keypoints[3], keypoints[4]);
+            paperSegment.GetComponent<SlicingScript>().TestSegment(keypoints[2], keypoints[3], keypoints[4]);
             // In this procedure, all paper segments under the fold will be traversed. The minimum z value will be recorded and used in animation 
         }
         //paper.GetComponent<SlicingScript>().SegmentPaper(keypoints[2], keypoints[3], keypoints[4]);
-        Debug.Log("Segment Finish");
+        Debug.Log("Testing Segment Finish");
 
 
         // TODO: After traversing all planes and identifying those influenced by the fold, if there is zero planes, then maybe flip entire paper
@@ -160,9 +171,7 @@ public class SlicingManager : MonoBehaviour
                         foldAxisZ = global.z;
                     }
                 }
-
             }
-
             
             foldPoint.z = foldAxisZ; //change z coordinate of midpoint to the minimum z of all vertices of all segments under fold line
 
@@ -181,6 +190,8 @@ public class SlicingManager : MonoBehaviour
             foldPoint = keypoints[4]; //midpoint
             foldPoint.z = foldAxisZ; //change z coordinate of midpoint to the minimum z of all vertices of all segments under fold line
 
+            FOLDP1 = keypoints[2];
+            FOLDP2 = keypoints[3];
             FOLDAXIS = foldAxis;
             FOLDPOSITION = foldPoint;
 
@@ -189,8 +200,12 @@ public class SlicingManager : MonoBehaviour
 
             // TODO: if have more than one layers, fold the first layer, then ask the user if you want to fold another layer? perhaps via a button. Now system can only fold everything together
 
-            // sort the animatingPaperSegments by their ordering of layers from top to bottom
-            animatingPaperSegments.Sort((a, b) => a.transform.position.z.CompareTo(b.transform.position.z));
+            // sort the paperSegmentToBeFold by ordering of layers from top to bottom
+            paperSegmentToBeFold.Sort((a, b) => a.transform.position.z.CompareTo(b.transform.position.z));
+
+
+            //// sort the animatingPaperSegments by their ordering of layers from top to bottom
+            //animatingPaperSegments.Sort((a, b) => a.transform.position.z.CompareTo(b.transform.position.z));
 
 
             foldSelectionButton.SetActive(true);
@@ -221,8 +236,10 @@ public class SlicingManager : MonoBehaviour
     {
         // Triggered when the button is clicked to fold next layer
 
-        if (foldLayerIndex < animatingPaperSegments.Count)
+        if (foldLayerIndex < paperSegmentToBeFold.Count)
         {
+            paperSegmentToBeFold[foldLayerIndex].GetComponent<SlicingScript>().SegmentPaper(FOLDP1, FOLDP2, FOLDPOSITION);
+            Debug.Log($"[DEBUG] the animatingPaperSegment list is length {animatingPaperSegments.Count}");
             animatingPaperSegments[foldLayerIndex].GetComponent<PaperSegment>().FoldingAnimation(FOLDPOSITION, FOLDAXIS);
             Debug.Log($"Folded the #{foldLayerIndex + 1} layer out of the {animatingPaperSegments.Count} layers");
 
@@ -305,5 +322,22 @@ public class SlicingManager : MonoBehaviour
     }
 
 
+    public class Edge
+    {
+        public GameObject paper1;
+        public GameObject paper2;
+        public Vector3 point1;
+        public Vector3 point2;
+
+        public Edge(GameObject paper1, GameObject paper2, Vector3 point1, Vector3 point2)
+        {
+            this.paper1 = paper1;
+            this.paper2 = paper2;
+            this.point1 = point1;
+            this.point2 = point2;
+
+        }
+
+    }
 
 }

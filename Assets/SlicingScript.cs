@@ -59,7 +59,7 @@ public class SlicingScript : MonoBehaviour
                 }
             }
 
-            slicingManager.numOfPlanesToSlice++; // record the number of planes influenced
+            // slicingManager.numOfPlanesToSlice++; // record the number of planes influenced
 
             // Create upper and lower hulls
             GameObject upperHull = slicedObject.CreateUpperHull(gameObject, crossSectionMaterial);
@@ -77,6 +77,8 @@ public class SlicingScript : MonoBehaviour
             lowerHull.AddComponent<PaperSegment>();
             upperHull.AddComponent<SlicingScript>();
             lowerHull.AddComponent<SlicingScript>();
+
+            
 
             slicingManager.animatingPaperSegments.Add(lowerHull); //Put into the list of all parts that animations will be played on
 
@@ -102,29 +104,75 @@ public class SlicingScript : MonoBehaviour
             Debug.Log("Error Slicing");
         }
     }
- 
 
-    private IEnumerator AnimateFold(GameObject foldingPart, Vector3 axisPoint, Vector3 axisDirection, float totalAngle, float duration)
+    public void TestSegment(Vector3 point1, Vector3 point2, Vector3 midpoint) //This function traverses all paper segments and calculate the number of paper that will be cut. However doesn't actually segment the paper
     {
-        float elapsed = 0f;
-        float currentAngle = 0f;
+        Vector3 foldAxis = point1 - point2;
+        Vector3 planeNormal = Vector3.Cross(foldAxis, new Vector3(0f, 0f, 1f)).normalized;
+        Vector3 planePosition = midpoint; // A point on the fold axis
 
-        while (elapsed < duration)
+        SlicedHull slicedObject = gameObject.Slice(planePosition, planeNormal, crossSectionMaterial);
+
+        if (slicedObject != null)
         {
-            float deltaAngle = (Time.deltaTime / duration) * totalAngle;
-            foldingPart.transform.RotateAround(axisPoint, axisDirection, deltaAngle);
+            // If under the fold axis, find the minimum z (the height of the axis)
+            foreach (Vector3 vertex in gameObject.GetComponent<MeshFilter>().mesh.vertices)
+            {
+                Vector3 global = gameObject.transform.TransformPoint(vertex);
+                if (global.z < slicingManager.foldAxisZ)
+                {
+                    slicingManager.foldAxisZ = global.z;
+                    Debug.Log($"Fold Axis z updated to {global.z}");
+                }
+            }
 
-            elapsed += Time.deltaTime;
-            currentAngle += deltaAngle;
-            yield return null;
+            slicingManager.numOfPlanesToSlice++; // record the number of planes influenced
+            
+            slicingManager.paperSegmentToBeFold.Add(gameObject);
+
+
+            /*
+            // Create upper and lower hulls
+            GameObject upperHull = slicedObject.CreateUpperHull(gameObject, crossSectionMaterial);
+            GameObject lowerHull = slicedObject.CreateLowerHull(gameObject, crossSectionMaterial);
+
+            // Position the new objects
+            upperHull.transform.SetParent(transform.parent);
+            lowerHull.transform.SetParent(transform.parent);
+            upperHull.transform.position = transform.position;
+            lowerHull.transform.position = transform.position;
+            upperHull.transform.localScale = transform.localScale;
+            lowerHull.transform.localScale = transform.localScale;
+
+            upperHull.AddComponent<PaperSegment>();
+            lowerHull.AddComponent<PaperSegment>();
+            upperHull.AddComponent<SlicingScript>();
+            lowerHull.AddComponent<SlicingScript>();
+
+
+
+            slicingManager.animatingPaperSegments.Add(lowerHull); //Put into the list of all parts that animations will be played on
+
+
+            //// Optionally, start the animation
+            //lowerHull.GetComponent<PaperSegment>().FoldingAnimation(midpoint, foldAxis);
+
+            slicingManager.allPaperSegments.Add(upperHull);
+            slicingManager.allPaperSegments.Add(lowerHull);
+            slicingManager.allPaperSegments.Remove(gameObject);
+
+
+            // Destroy the original object
+            gameObject.SetActive(false);
+            // Destroy(gameObject);
+
+
+            */
+
         }
-
-        // Correct any residual angle due to frame time inaccuracies
-        float remainingAngle = totalAngle - currentAngle;
-        if (Mathf.Abs(remainingAngle) > 0.01f)
+        else
         {
-            foldingPart.transform.RotateAround(axisPoint, axisDirection, remainingAngle);
+            Debug.Log("Error Slicing");
         }
     }
-
 }
