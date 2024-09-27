@@ -57,7 +57,8 @@ public class SlicingManager : MonoBehaviour
     // - Mapping between face to the edges
     // - When folding takes place, the relationship of faces and edges are updated
 
-    public Dictionary<GameObject, Edge> PaperToConnectedPapers; //Mapping of each paper segment gameobject to all of its edges
+    public Dictionary<GameObject, List<Edge>> PaperToEdges; //Mapping of each paper segment gameobject to all of its edges
+    public Dictionary<Edge, List<GameObject>> EdgeToPapers;
 
     void Start()
     {
@@ -275,6 +276,7 @@ public class SlicingManager : MonoBehaviour
             GameObject previousUpperHull = previousAfterFold[1];
 
             previousPaper.SetActive(true);
+
             previousLowerHull.SetActive(false);
             previousUpperHull.SetActive(false);
 
@@ -335,38 +337,7 @@ public class SlicingManager : MonoBehaviour
             foldLineRenderer.SetPosition(1, point2);
         }
     }
-    
-    private void SegmentPaper(Vector3 point1, Vector3 point2, Vector3 midpoint)
-    {
-        Vector3 foldAxis = point1 - point2;
-        Vector3 planeNormal = Vector3.Cross(foldAxis, new Vector3(0f, 0f, 1f)).normalized;
-        Vector3 planePosition = midpoint; // A point on the fold axis
-
-        SlicedHull slicedObject = paper.Slice(planePosition, planeNormal, crossSectionMaterial);
-
-        if (slicedObject != null)
-        {
-            // Create upper and lower hulls
-            GameObject upperHull = slicedObject.CreateUpperHull(gameObject, crossSectionMaterial);
-            GameObject lowerHull = slicedObject.CreateLowerHull(gameObject, crossSectionMaterial);
-
-            // Position the new objects
-            upperHull.transform.position = transform.position;
-            lowerHull.transform.position = transform.position;
-
-            // Destroy the original object
-            gameObject.SetActive(false);
-            // Destroy(gameObject);
-        }
-        else
-        {
-            Debug.Log("Error Slicing");
-        }
-
-
-
-    }
-
+   
 
     public class Edge
     {
