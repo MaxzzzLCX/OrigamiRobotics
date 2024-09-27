@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Xml.Linq;
+using Unity.VisualScripting;
 using UnityEditor;
 //using UnityEditor.UI;
 using UnityEngine;
@@ -37,6 +38,7 @@ public class SlicingManager : MonoBehaviour
     public List<GameObject> allPaperSegments = new List<GameObject>();
     public List<GameObject> animatingPaperSegments = new List<GameObject>();
     public List<GameObject> paperSegmentToBeFold = new List<GameObject>();
+    public GameObject animationPart;
     public int foldLayerIndex = 0;
     public float foldAxisZ;
     public int numOfPlanesToSlice = 0;
@@ -46,6 +48,10 @@ public class SlicingManager : MonoBehaviour
     public Vector3 FOLDP2;
     public Vector3 FOLDAXIS;
     public Vector3 FOLDPOSITION;
+
+    // These two are used to keep track of the folding steps implemented in this round. So that they can be reverted. 
+    public List<GameObject> previousPaperBeforeFold = new List<GameObject>();
+    public List<GameObject[]> previousPaperAfterFold = new List<GameObject[]>();
 
     // TODO: impose physical constraints between layers by considering the edges between paper segments
     // - Mapping between face to the edges
@@ -131,9 +137,13 @@ public class SlicingManager : MonoBehaviour
         DrawFoldLine(keypoints[2], keypoints[3]);
         Debug.Log("Finish Drawing Line)");
 
+        // Reset all information for the new fold
         List<GameObject> paperSegmentsCopy = new List<GameObject>(allPaperSegments);
         animatingPaperSegments = new List<GameObject>();
         paperSegmentToBeFold = new List<GameObject>();
+        previousPaperAfterFold = new List<GameObject[]>();
+        previousPaperBeforeFold = new List<GameObject>();
+        
 
         // Keep a list of gameobject of the current gameobject.
         // [DONE] TODO: the folding direction is easy to determine, but need to dynamically determine the height of the folding point
@@ -225,11 +235,6 @@ public class SlicingManager : MonoBehaviour
             //animatingPaperSegments.Clear();
         }
 
-
-
-
-        
-
     }
 
     public void NextLayer()
@@ -238,10 +243,14 @@ public class SlicingManager : MonoBehaviour
 
         if (foldLayerIndex < paperSegmentToBeFold.Count)
         {
+
             paperSegmentToBeFold[foldLayerIndex].GetComponent<SlicingScript>().SegmentPaper(FOLDP1, FOLDP2, FOLDPOSITION);
             Debug.Log($"[DEBUG] the animatingPaperSegment list is length {animatingPaperSegments.Count}");
-            animatingPaperSegments[foldLayerIndex].GetComponent<PaperSegment>().FoldingAnimation(FOLDPOSITION, FOLDAXIS);
-            Debug.Log($"Folded the #{foldLayerIndex + 1} layer out of the {animatingPaperSegments.Count} layers");
+
+            //animatingPaperSegments[foldLayerIndex].SetActive(true);
+            //animatingPaperSegments[foldLayerIndex].GetComponent<PaperSegment>().FoldingAnimation(FOLDPOSITION, FOLDAXIS);
+            animationPart.GetComponent<PaperSegment>().FoldingAnimation(FOLDPOSITION, FOLDAXIS);
+            Debug.Log($"Folded the #{foldLayerIndex + 1} layer out of the {paperSegmentToBeFold.Count} layers");
 
             foldLayerIndex++;
         }
@@ -249,6 +258,43 @@ public class SlicingManager : MonoBehaviour
         {
             Debug.Log("Out of range");
             foldSelectionButton.SetActive(false);
+        }
+    }
+
+    public void PreviousLayer()
+    {
+        if (foldLayerIndex > 0)
+        {
+            // Play reverse animation
+            //animatingPaperSegments[foldLayerIndex-1].GetComponent<PaperSegment>().FoldingAnimation(FOLDPOSITION, FOLDAXIS, 180f);
+            // animatingPaperSegments[foldLayerIndex - 1].GetComponent<PaperSegment>().SuddenFold(FOLDPOSITION, FOLDAXIS);
+
+            GameObject previousPaper = previousPaperBeforeFold[foldLayerIndex - 1];
+            GameObject[] previousAfterFold = previousPaperAfterFold[foldLayerIndex - 1];
+            GameObject previousLowerHull = previousAfterFold[0];
+            GameObject previousUpperHull = previousAfterFold[1];
+
+            previousPaper.SetActive(true);
+            previousLowerHull.SetActive(false);
+            previousUpperHull.SetActive(false);
+
+            allPaperSegments.Add(previousPaperBeforeFold[foldLayerIndex - 1]);
+            allPaperSegments.Remove(previousPaperAfterFold[foldLayerIndex - 1][0]);
+            allPaperSegments.Remove(previousPaperAfterFold[foldLayerIndex - 1][1]);
+
+            // Since this step is reverted, remove the record of this step
+            previousPaperBeforeFold.Remove(previousPaper);
+            previousPaperAfterFold.Remove(previousAfterFold);
+            Destroy(previousLowerHull);
+            Destroy(previousUpperHull);
+
+            Debug.Log($"Length of prevPaperBeforeFold {previousPaperBeforeFold.Count}, previousPaperAfterFold {previousPaperAfterFold.Count}");
+
+            foldLayerIndex--;
+        }
+        else
+        {
+            Debug.Log("No Previous Fold");
         }
     }
 

@@ -18,10 +18,10 @@ public class PaperSegment : MonoBehaviour
         
     }
 
-    public void FoldingAnimation(Vector3 midpoint, Vector3 foldAxis)
+    public void FoldingAnimation(Vector3 midpoint, Vector3 foldAxis, float foldingAngle = -180f)
     {
-        float foldingAngle = -180f; // The angle to fold, adjust as needed
-        float animationDuration = 2f; // Duration of the folding animation
+        // float foldingAngle = -180f; // The angle to fold, adjust as needed
+         float animationDuration = 2f; // Duration of the folding animation
 
         StartCoroutine(AnimateFold(gameObject, midpoint, foldAxis, foldingAngle, animationDuration));
     }
@@ -47,5 +47,10 @@ public class PaperSegment : MonoBehaviour
         {
             foldingPart.transform.RotateAround(axisPoint, axisDirection, remainingAngle);
         }
+    }
+
+    public void SuddenFold(Vector3 axisPoint, Vector3 foldAxis, float foldingAngle = 180f)
+    {
+        gameObject.transform.RotateAround(axisPoint, foldAxis, foldingAngle);
     }
 }

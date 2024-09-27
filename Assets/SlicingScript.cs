@@ -80,7 +80,8 @@ public class SlicingScript : MonoBehaviour
 
             
 
-            slicingManager.animatingPaperSegments.Add(lowerHull); //Put into the list of all parts that animations will be played on
+            // slicingManager.animatingPaperSegments.Add(lowerHull); //Put into the list of all parts that animations will be played on
+            slicingManager.animationPart = lowerHull;
 
 
             //// Optionally, start the animation
@@ -89,6 +90,11 @@ public class SlicingScript : MonoBehaviour
             slicingManager.allPaperSegments.Add(upperHull);
             slicingManager.allPaperSegments.Add(lowerHull);
             slicingManager.allPaperSegments.Remove(gameObject);
+
+            // Keeping a record of the folding steps implemented. This can be reverted using the back button
+            slicingManager.previousPaperBeforeFold.Add(gameObject);
+            slicingManager.previousPaperAfterFold.Add(new GameObject[] { lowerHull, upperHull});
+            
 
 
             // Destroy the original object
