@@ -16,6 +16,10 @@
 /_builds_NewFunctionalityVersion/
 /_builds_NewFunctionalityVersion_BurstDebugInformation_DoNotShip/
 
+# Large videos
+/AR_Origami_Demonstration_2.mp4
+/AR_Origami_VirtualPaperFolding_2.mp4
+
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/
